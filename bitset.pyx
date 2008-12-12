@@ -23,9 +23,9 @@ cdef class BitSet:
   # to make things faster
   cdef size_t bitlen
   
-  def __new__(self, bit_capacity=0, initial_bit_len=0):
+  def __new__(self, size=0, initial_bit_len=0):
     cdef size_t initial_dlen
-
+    bit_capacity = size
     initial_dlen = bit_capacity / 8
     if bit_capacity % 8 > 0:
       initial_dlen = initial_dlen + 1

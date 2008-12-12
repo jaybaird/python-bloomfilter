@@ -36,9 +36,12 @@ import base64
 from cStringIO import StringIO
 
 try:
-    from bit_vector import BitVector
+    from bitset import BitSet
 except ImportError:
-    raise ImportError, 'python-sbf requires BitVector >= 1.5.1'
+    try:
+        from bit_vector import BitVector as BitSet
+    except ImportError:
+        raise ImportError, 'python-sbf requires BitVector >= 1.5.1 or the native compiled BitSet'
 
 class BloomFilter(object):
     def __init__(self, m=None, k=None, p=0.001):
@@ -49,7 +52,7 @@ class BloomFilter(object):
         self.n = int(self.m * (pow(math.log(2), 2) / abs(math.log(self.p))))
         self.count = 0
 
-        self.slices = [BitVector(size=self.stripe_size) for i in xrange(int(math.ceil(self.m/(self.m/self.k))))]
+        self.slices = [BitSet(size=self.stripe_size) for i in xrange(int(math.ceil(self.m/(self.m/self.k))))]
 
     def _hashes(self, key):
         if not isinstance(key, basestring):
