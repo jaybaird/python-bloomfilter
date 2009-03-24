@@ -1,4 +1,4 @@
-pybloom is a module that includes a bloomfilter data structure along with 
+pybloom is a module that includes a Bloom Filter data structure along with 
 an implmentation of Scalable Bloom Filters as discussed in:
 
 P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters, 
