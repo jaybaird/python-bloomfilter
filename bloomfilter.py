@@ -39,16 +39,16 @@ def fnv_hash(bytes, rv=0x811c9dc5):
         rv = 0xffffffff & ((rv ^ c) * fnv_prime)
     return rv
 
-def fnv_hashes(key, num_hashes):
+def fnv_hashes(key, num_hashes, num_bits):
     """
     Generates num_hashes indexes based on an FNV-1a hash of the key
     """
-    if not isinstance(key, unicode):
+    if isinstance(key, basestring) and not isinstance(key, unicode):
         key = key.encode('utf-8')
     else:
         key = str(key)
     rv = fnv_hash(key)
-    mask = self.m - 1
+    mask = num_bits - 1
     return [fnv_hash(str(i), rv) & mask for i in xrange(num_hashes)]
 
 
@@ -91,7 +91,7 @@ class BloomFilter(object):
         """
         Tests a key's membership in this bloom filter.
 
-        >>> b = bloomfilter(bits=8192, hashes=4)
+        >>> b = BloomFilter(bits=8192, hashes=4)
         >>> b.add("hello")
         False
         >>> "hello" in b
@@ -99,7 +99,7 @@ class BloomFilter(object):
         """
 
         if not isinstance(key, list):
-            hashes = fnv_hashes(key, self.k)
+            hashes = fnv_hashes(key, self.k, self.m)
         else:
             hashes = key
 
@@ -113,13 +113,13 @@ class BloomFilter(object):
         Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
 
-        >>> b = bloomfilter(bits=8192, hashes=4)
+        >>> b = BloomFilter(bits=8192, hashes=4)
         >>> b.add("hello")
         False
         >>> b.add("hello")
         True
         """
-        h = fnv_hashes(key, self.k)
+        h = fnv_hashes(key, self.k, self.m)
         if h in self:
             return True
         for k in h:
