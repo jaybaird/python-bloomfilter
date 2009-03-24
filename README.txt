@@ -8,10 +8,11 @@ Bloom filters are great if you understand what amount of bits you need to set
 aside early to store your entire set. Scalable Bloom Filters allow your bloom
 filter bits to grow as a function of false positive probability and size.
 
-A filter is "full" when it's capacity: M * ((ln 2 ^ 2) / abs(ln p)), where M 
-is the number of bits and p is the false positive probability, is reached a 
-new filter is then created exponentially larger than the last with a tighter 
-probability of false positives and a larger k.
+A filter is "full" when at capacity: M * ((ln 2 ^ 2) / abs(ln p)), where M 
+is the number of bits and p is the false positive probability. When capacity
+is reached a new filter is then created exponentially larger than the last
+with a tighter probability of false positives and a larger number of hash
+functions.
 
 >>> from pybloom import BloomFilter
 >>> f = BloomFilter(bits=8192, probability=0.001)
