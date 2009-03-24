@@ -56,7 +56,7 @@ class bloomfilter(object):
     def __init__(self, bits, hashes, probability=0.001):
         """
         Implements a space-efficient probabilistic data structure
-        
+
         bits
             the size of the filter, in bits. Must be a power of two.
         hashes
@@ -65,7 +65,7 @@ class bloomfilter(object):
             the probability of the filter returning false positives. This
             determines the filters capacity. Going over capacity greatly
             increases the chance of false positives.
-            
+
         >>> b = bloomfilter(bits=8192, hashes=4, probability=0.001)
         >>> b.add("test")
         False
@@ -121,7 +121,7 @@ class bloomfilter(object):
     def __contains__(self, key):
         """
         Tests a key's membership in this bloom filter.
-        
+
         >>> b = bloomfilter(bits=8192, hashes=4)
         >>> b.add("hello")
         False
@@ -143,7 +143,7 @@ class bloomfilter(object):
         """
         Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
-        
+
         >>> b = bloomfilter(bits=8192, hashes=4)
         >>> b.add("hello")
         False
