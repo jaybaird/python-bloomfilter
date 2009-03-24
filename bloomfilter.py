@@ -6,7 +6,7 @@ without increasing the false positive probability.
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
     >>> from bloomfilter import bloomfilter
-    >>> b = bloomfilter(bits=8192, hashes=4, probability=0.001)
+    >>> filter = bloomfilter(bits=8192, hashes=4, probability=0.001)
     >>> [filter.add(x) for x in range(10)]
     [False, False, False, False, False, False, False, False, False, False]
     >>> all([(x in filter) for x in range(10)])
