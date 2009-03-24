@@ -33,6 +33,8 @@ setup(
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     classifiers=CLASSIFIERS,
+    keywords=('data structures', 'bloom filter', 'bloom', 'filter', 
+              'probabilistic', 'set')
     author="Jay Baird",
     author_email="jay.baird@me.com",
     url="http://github.com/jaybaird/python-bloomfilter/",
