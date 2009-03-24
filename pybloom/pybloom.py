@@ -5,14 +5,15 @@ without increasing the false positive probability.
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
     >>> from pybloom import BloomFilter
-    >>> filter = BloomFilter(bits=8192, probability=0.001)
-    >>> [filter.add(x) for x in range(10)]
-    [False, False, False, False, False, False, False, False, False, False]
-    >>> all([(x in filter) for x in range(10)])
+    >>> f = BloomFilter(bits=8192, probability=0.001)
+    >>> for i in xrange(0, f.capacity):
+    ...     _ = f.add(i)
+    ...
+    >>> 500 in f
     True
-    >>> 10 in filter
+    >>> f.capacity in f
     False
-    >>> 5 in filter
+    >>> abs((len(sbf) / 100000.0) - 1.0) <= f.probability
     True
 
     >>> from pybloom import ScalableBloomFilter
@@ -20,13 +21,13 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     >>> for i in xrange(0, 100000):
     ...     _ = sbf.add(i)
     ...
-    >>> (sum([f.m for f in sbf.filters]) / 8) / 1024.0
+    >>> (sum([f.bits for f in sbf.filters]) / 8) / 1024.0
     255.0
     >>> sbf.capacity
     133100
     >>> len(sbf)
     94609
-    >>> abs((len(sbf) / 100000.0) - 1.0) <= sbf.p
+    >>> abs((len(sbf) / 100000.0) - 1.0) <= sbf.probability
     True
     # len(sbf) may not equal the entire input length. 0.006% error is well
     # below the default 0.1% error threshold
@@ -84,13 +85,13 @@ class BloomFilter(object):
             raise ValueError("Bits must be a power of two.")
         if not probability or probability < 0:
             raise ValueError("Probability must be a decimal less than 0.")
-        self.m = bits
-        self.p = probability
-        self.k = int(round(math.log(1/self.p, 2)))
-        self.capacity = int(round(self.m * pow(math.log(2), 2) /
-                                           abs(math.log(self.p))))
+        self.bits = bits
+        self.probability = probability
+        self.hashes = int(round(math.log(1/self.probability, 2)))
+        self.capacity = int(round(self.bits * pow(math.log(2), 2) /
+                                           abs(math.log(self.probability))))
         self.count = 0
-        self.filter = bitarray.bitarray(self.m)
+        self.filter = bitarray.bitarray(self.bits)
         self.filter.setall(False)
 
     def __contains__(self, key):
@@ -104,7 +105,7 @@ class BloomFilter(object):
 
         """
         if not isinstance(key, list):
-            hashes = fnv_hashes(key, self.k, self.m)
+            hashes = fnv_hashes(key, self.hashes, self.bits)
         else:
             hashes = key
 
@@ -128,7 +129,7 @@ class BloomFilter(object):
         True
 
         """
-        h = fnv_hashes(key, self.k, self.m)
+        h = fnv_hashes(key, self.hashes, self.bits)
         if h in self:
             return True
         for k in h:
@@ -170,10 +171,10 @@ class ScalableBloomFilter(object):
             raise ValueError("Bits must be a power of two.")
         if not probability or probability < 0:
             raise ValueError("Probability must be a decimal less than 0.")
-        self.s = mode
-        self.r = 0.9
-        self.m = bits
-        self.p = probability
+        self.scale = mode
+        self.ratio = 0.9
+        self.bits = bits
+        self.probability = probability
         self.filters = [BloomFilter(bits=bits, probability=probability)]
         self.filter = self.filters[0]
 
@@ -210,8 +211,8 @@ class ScalableBloomFilter(object):
         if dupe:
             return dupe
         if self.filter.count == self.filter.capacity:
-            prob = self.filter.p * self.r
-            bits = self.m * pow(self.s, len(self.filters))
+            prob = self.filter.probability * self.ratio
+            bits = self.bits * pow(self.scale, len(self.filters))
             new_filter = BloomFilter(bits=bits, probability=prob)
             self.filter = new_filter
             self.filters = [new_filter] + self.filters
