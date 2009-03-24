@@ -1,46 +1,24 @@
 """
-The MIT License
-
-Copyright (c) <2008> <Jay Baird>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-bloomfilter is a module that includes a bloomfilter data structure and 
-an implmentation of Scalable Bloom Filters as discussed in:
-
-P. Almeida, C.Baquero, N. Preguica, D. Hutchison, Scalable Bloom Filters,
-(GLOBECOM 2007), IEEE, 2007.
-
-Bloom filters are great if you understand the amount of bits you need to set
-aside early to store your entire set. Scalable Bloom Filters allow your bloom
-filters to grow as more elements are stored inside them.
-
-A filter is "full" when it's capacity: M * ((ln 2 ^ 2) / abs(ln p)), where M
-is the number of bits and p is the false positive probability, is reached. A
-new filter is then created exponentially larger than the last with a tighter
-probability of false positives and a larger k.
+This module implements a bloomfilter probabilistic data structure and 
+an a Scalable Bloom Filter that grows in size as your add more items to it
+without increasing the false positive probability.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
+
+    >>> from bloomfilter import bloomfilter
+    >>> b = bloomfilter(bits=8192, hashes=4, probability=0.001)
+    >>> [filter.add(x) for x in range(10)]
+    [False, False, False, False, False, False, False, False, False, False]
+    >>> all([(x in filter) for x in range(10)])
+    True
+    >>> 10 in filter
+    False
+    >>> 5 in filter
+    True
 """
 
 __version__ = '2.0'
-__author__  = "Jay Baird (jay.baird@mochimedia.com)"
+__author__  = "Jay Baird <jay.baird@mochimedia.com>"
 __date__    = '2009-March-23'
 
 import math
@@ -49,7 +27,7 @@ import array
 try:
     import bitarray
 except ImportError:
-    raise ImportError, 'python-bloomfilter requires bitarray >= 0.3.4'
+    raise ImportError, 'bloomfilter requires bitarray >= 0.3.4'
 
 
 class bloomfilter(object):
