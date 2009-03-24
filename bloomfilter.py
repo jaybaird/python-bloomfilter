@@ -5,8 +5,8 @@ without increasing the false positive probability.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
-    >>> from bloomfilter import bloomfilter
-    >>> filter = bloomfilter(bits=8192, hashes=4, probability=0.001)
+    >>> from bloomfilter import BloomFilter
+    >>> filter = BloomFilter(bits=8192, hashes=4, probability=0.001)
     >>> [filter.add(x) for x in range(10)]
     [False, False, False, False, False, False, False, False, False, False]
     >>> all([(x in filter) for x in range(10)])
@@ -29,8 +29,30 @@ try:
 except ImportError:
     raise ImportError, 'bloomfilter requires bitarray >= 0.3.4'
 
+def fnv_hash(bytes, rv=0x811c9dc5):
+    """
+    Implements 32-bit FNV-1a hash
+    http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-1a
+    """
+    fnv_prime = 0x1000193
+    for c in array.array('B', bytes):
+        rv = 0xffffffff & ((rv ^ c) * fnv_prime)
+    return rv
 
-class bloomfilter(object):
+def fnv_hashes(key, num_hashes):
+    """
+    Generates num_hashes indexes based on an FNV-1a hash of the key
+    """
+    if not isinstance(key, unicode):
+        key = key.encode('utf-8')
+    else:
+        key = str(key)
+    rv = fnv_hash(key)
+    mask = self.m - 1
+    return [fnv_hash(str(i), rv) & mask for i in xrange(num_hashes)]
+
+
+class BloomFilter(object):
     def __init__(self, bits, hashes, probability=0.001):
         """
         Implements a space-efficient probabilistic data structure
@@ -44,7 +66,7 @@ class bloomfilter(object):
             determines the filters capacity. Going over capacity greatly
             increases the chance of false positives.
 
-        >>> b = bloomfilter(bits=8192, hashes=4, probability=0.001)
+        >>> b = BloomFilter(bits=8192, hashes=4, probability=0.001)
         >>> b.add("test")
         False
         >>> "test" in b
@@ -65,37 +87,6 @@ class bloomfilter(object):
         self.filter = bitarray.bitarray(self.m)
         self.filter.setall(False)
 
-    def _hashes(self, key):
-        """
-        Implements FNV-1a hash
-        http://en.wikipedia.org/wiki/Fowler_Noll_Vo_hash#FNV-1a_hash
-        an integer of the key number is added to the front of the key, so the
-        key 'foo' and four hashes will hash ['0foo', '1foo', '2foo', '3foo']
-
-        >>> b = bloomfilter(bits=8192, hashes=4)
-        >>> b._hashes([1,2,3])
-        [2083, 708, 3552, 1653]
-        >>> b._hashes("hello")
-        [1621, 4172, 1042, 5745]
-        """
-        rv = 0x811c9dc5L # FNV Offset Basis
-
-        if not isinstance(key, basestring):
-            key = str(key)
-        else:
-            key = key.encode("utf-8")
-
-        hashes = list()
-
-        for i in range(self.k):
-            byte_array = array.array("B")
-            byte_array.fromstring(str(i) + key)
-            for byte in byte_array:
-                rv = (rv ^ (byte & 0xff)) * 16777619 # FNV Prime
-            hashes.append(int((rv & 0xffffffffL) & (self.m - 1))) 
-
-        return hashes
-
     def __contains__(self, key):
         """
         Tests a key's membership in this bloom filter.
@@ -108,7 +99,7 @@ class bloomfilter(object):
         """
 
         if not isinstance(key, list):
-            hashes = self._hashes(key)
+            hashes = fnv_hashes(key, self.k)
         else:
             hashes = key
 
@@ -128,7 +119,7 @@ class bloomfilter(object):
         >>> b.add("hello")
         True
         """
-        h = self._hashes(key)
+        h = fnv_hashes(key, self.k)
         if h in self:
             return True
         for k in h:
@@ -138,7 +129,7 @@ class bloomfilter(object):
         return False
 
 
-class scalablebloomfilter(object):
+class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
     LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
 
