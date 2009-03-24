@@ -15,6 +15,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     False
     >>> 5 in filter
     True
+
 """
 
 __version__ = '2.0'
@@ -33,6 +34,7 @@ def fnv_hash(bytes, rv=0x811c9dc5):
     """
     Implements 32-bit FNV-1a hash
     http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-1a
+
     """
     fnv_prime = 0x1000193
     for c in array.array('B', bytes):
@@ -40,9 +42,7 @@ def fnv_hash(bytes, rv=0x811c9dc5):
     return rv
 
 def fnv_hashes(key, num_hashes, num_bits):
-    """
-    Generates num_hashes indexes based on an FNV-1a hash of the key
-    """
+    """Generates num_hashes indexes based on an FNV-1a hash of the key"""
     if isinstance(key, basestring) and not isinstance(key, unicode):
         key = key.encode('utf-8')
     else:
@@ -71,6 +71,7 @@ class BloomFilter(object):
         False
         >>> "test" in b
         True
+
         """
         if not bits or not bits % 2 == 0:
             raise ValueError, "Bits must be a power of two."
@@ -96,8 +97,8 @@ class BloomFilter(object):
         False
         >>> "hello" in b
         True
-        """
 
+        """
         if not isinstance(key, list):
             hashes = fnv_hashes(key, self.k, self.m)
         else:
@@ -118,6 +119,7 @@ class BloomFilter(object):
         False
         >>> b.add("hello")
         True
+
         """
         h = fnv_hashes(key, self.k, self.m)
         if h in self:
@@ -135,6 +137,32 @@ class ScalableBloomFilter(object):
 
     def __init__(self, bits=8192, hashes=4, probability=0.001, 
                  mode=SMALL_SET_GROWTH):
+        """ Implements a space-efficient probabilistic data structure that 
+        grows as more items are added while maintaining a steady false 
+        positive rate
+
+        bits
+            the size of the filter, in bits. Must be a power of two.
+        hashes
+            the number of hashes to get positions in the bitarray.
+        probability
+            the probability of the filter returning false positives. This
+            determines the filters capacity. Going over capacity greatly
+            increases the chance of false positives.
+        mode
+            can be either ScalableBloomFilter.SMALL_SET_GROWTH or 
+            ScalableBloomFilter.LARGE_SET_GROWTH. SMALL_SET_GROWTH is slower
+            but uses less memory. LARGE_SET_GROWTH is faster but consumes 
+            memory faster.
+
+        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+        >>> b.add("test")
+        False
+        >>> "test" in b
+        True
+        
+        """
         if not bits % 2 == 0:
             raise ValueError, "Bits must be a power of two."
         if hashes <= 0:
@@ -146,16 +174,38 @@ class ScalableBloomFilter(object):
         self.k = hashes
         self.m = bits
         self.p = probability
-        self.filters = [bloomfilter(bits, hashes, probability)]
+        self.filters = [BloomFilter(bits, hashes, probability)]
         self.active_filter = self.filters[0]
 
     def __contains__(self, key):
+        """Tests a key's membership in this bloom filter.
+
+        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+        >>> b.add("hello")
+        False
+        >>> "hello" in b
+        True
+
+        """
         for f in self.filters:
             if key in f:
                 return True
         return False
 
     def add(self, key):
+        """Adds a key to this bloom filter. 
+        If the key already exists in this filter it will return True. 
+        Otherwise False.
+
+        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+        >>> b.add("hello")
+        False
+        >>> b.add("hello")
+        True
+
+        """
         dupe = self.active_filter.add(key)
         if dupe:
             return dupe
@@ -170,9 +220,11 @@ class ScalableBloomFilter(object):
         return dupe
 
     def capacity(self):
+        """Returns the total capacity for all filters in this SBF"""
         return sum([f.capacity for f in self.filters])
 
     def __len__(self):
+        """Returns the total number of elements stored in this SBF"""
         return sum([f.count for f in self.filters])
 
 
