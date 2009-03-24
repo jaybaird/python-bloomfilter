@@ -1,12 +1,11 @@
-"""
-This module implements a bloomfilter probabilistic data structure and 
+"""This module implements a bloom filter probabilistic data structure and 
 an a Scalable Bloom Filter that grows in size as your add more items to it
 without increasing the false positive probability.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
-    >>> from bloomfilter import BloomFilter
-    >>> filter = BloomFilter(bits=8192, hashes=4, probability=0.001)
+    >>> from pybloom import BloomFilter
+    >>> filter = BloomFilter(bits=8192, probability=0.001)
     >>> [filter.add(x) for x in range(10)]
     [False, False, False, False, False, False, False, False, False, False]
     >>> all([(x in filter) for x in range(10)])
@@ -16,11 +15,23 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     >>> 5 in filter
     True
 
-"""
+    >>> from pybloom import ScalableBloomFilter
+    >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+    >>> for i in xrange(0, 100000):
+    ...     _ = sbf.add(i)
+    ...
+    >>> (sum([f.m for f in sbf.filters]) / 8) / 1024.0
+    255.0
+    >>> sbf.capacity
+    133100
+    >>> len(sbf)
+    94609
+    >>> abs((len(sbf) / 100000.0) - 1.0) <= sbf.p
+    True
+    # len(sbf) may not equal the entire input length. 0.006% error is well
+    # below the default 0.1% error threshold
 
-__version__ = '2.0'
-__author__  = "Jay Baird <jay.baird@mochimedia.com>"
-__date__    = '2009-March-23'
+"""
 
 import math
 import array
@@ -28,11 +39,10 @@ import array
 try:
     import bitarray
 except ImportError:
-    raise ImportError, 'bloomfilter requires bitarray >= 0.3.4'
+    raise ImportError('pybloom requires bitarray >= 0.3.4')
 
 def fnv_hash(bytes, rv=0x811c9dc5):
-    """
-    Implements 32-bit FNV-1a hash
+    """Implements 32-bit FNV-1a hash
     http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-1a
 
     """
@@ -47,52 +57,46 @@ def fnv_hashes(key, num_hashes, num_bits):
         key = key.encode('utf-8')
     else:
         key = str(key)
-    rv = fnv_hash(key)
     mask = num_bits - 1
+    rv = fnv_hash(key)
     return [fnv_hash(str(i), rv) & mask for i in xrange(num_hashes)]
 
 
 class BloomFilter(object):
-    def __init__(self, bits, hashes, probability=0.001):
-        """
-        Implements a space-efficient probabilistic data structure
+    def __init__(self, bits, probability=0.001):
+        """Implements a space-efficient probabilistic data structure
 
         bits
             the size of the filter, in bits. Must be a power of two.
-        hashes
-            the number of hashes to get positions in the bitarray.
         probability
             the probability of the filter returning false positives. This
             determines the filters capacity. Going over capacity greatly
             increases the chance of false positives.
 
-        >>> b = BloomFilter(bits=8192, hashes=4, probability=0.001)
+        >>> b = BloomFilter(bits=8192, probability=0.001)
         >>> b.add("test")
         False
         >>> "test" in b
         True
 
         """
-        if not bits or not bits % 2 == 0:
-            raise ValueError, "Bits must be a power of two."
-        if not hashes or hashes <= 0:
-            raise ValueError, "Hashes must be greater than or equal to one."
-        if probability < 0:
-            raise ValueError, "Probability must be a decimal less than 0."
-        self.k = hashes
+        if not bits or bits != 1 << int(math.log(bits) / math.log(2)):
+            raise ValueError("Bits must be a power of two.")
+        if not probability or probability < 0:
+            raise ValueError("Probability must be a decimal less than 0.")
         self.m = bits
         self.p = probability
-        self.capacity = int(self.m * (pow(math.log(2), 2) /
-                            abs(math.log(self.p))))
+        self.k = int(round(math.log(1/self.p, 2)))
+        self.capacity = int(round(self.m * pow(math.log(2), 2) /
+                                           abs(math.log(self.p))))
         self.count = 0
         self.filter = bitarray.bitarray(self.m)
         self.filter.setall(False)
 
     def __contains__(self, key):
-        """
-        Tests a key's membership in this bloom filter.
+        """Tests a key's membership in this bloom filter.
 
-        >>> b = BloomFilter(bits=8192, hashes=4)
+        >>> b = BloomFilter(bits=8192)
         >>> b.add("hello")
         False
         >>> "hello" in b
@@ -109,12 +113,15 @@ class BloomFilter(object):
                 return False
         return True
 
+    def __len__(self):
+        """Return the number of keys stored by this bloom filter."""
+        return self.count
+
     def add(self, key):
-        """
-        Adds a key to this bloom filter. If the key already exists in this
+        """ Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
 
-        >>> b = BloomFilter(bits=8192, hashes=4)
+        >>> b = BloomFilter(bits=8192)
         >>> b.add("hello")
         False
         >>> b.add("hello")
@@ -127,7 +134,6 @@ class BloomFilter(object):
         for k in h:
             self.filter[k] = True
         self.count += 1
-
         return False
 
 
@@ -135,27 +141,24 @@ class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
     LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
 
-    def __init__(self, bits=8192, hashes=4, probability=0.001, 
-                 mode=SMALL_SET_GROWTH):
-        """ Implements a space-efficient probabilistic data structure that 
-        grows as more items are added while maintaining a steady false 
+    def __init__(self, bits=8192, probability=0.001, mode=SMALL_SET_GROWTH):
+        """ Implements a space-efficient probabilistic data structure that
+        grows as more items are added while maintaining a steady false
         positive rate
 
         bits
             the size of the filter, in bits. Must be a power of two.
-        hashes
-            the number of hashes to get positions in the bitarray.
         probability
             the probability of the filter returning false positives. This
             determines the filters capacity. Going over capacity greatly
             increases the chance of false positives.
         mode
-            can be either ScalableBloomFilter.SMALL_SET_GROWTH or 
+            can be either ScalableBloomFilter.SMALL_SET_GROWTH or
             ScalableBloomFilter.LARGE_SET_GROWTH. SMALL_SET_GROWTH is slower
-            but uses less memory. LARGE_SET_GROWTH is faster but consumes 
+            but uses less memory. LARGE_SET_GROWTH is faster but consumes
             memory faster.
 
-        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+        >>> b = ScalableBloomFilter(bits=8192, probability=0.001, \
                                     mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> b.add("test")
         False
@@ -163,24 +166,21 @@ class ScalableBloomFilter(object):
         True
         
         """
-        if not bits % 2 == 0:
-            raise ValueError, "Bits must be a power of two."
-        if hashes <= 0:
-            raise ValueError, "Hashes must be greater than or equal to one."
-        if probability < 0:
-            raise ValueError, "Probability must be a decimal less than 0."
+        if not bits or bits != 1 << int(math.log(bits) / math.log(2)):
+            raise ValueError("Bits must be a power of two.")
+        if not probability or probability < 0:
+            raise ValueError("Probability must be a decimal less than 0.")
         self.s = mode
         self.r = 0.9
-        self.k = hashes
         self.m = bits
         self.p = probability
-        self.filters = [BloomFilter(bits, hashes, probability)]
-        self.active_filter = self.filters[0]
+        self.filters = [BloomFilter(bits=bits, probability=probability)]
+        self.filter = self.filters[0]
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
 
-        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+        >>> b = ScalableBloomFilter(bits=8192, probability=0.001, \
                                     mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> b.add("hello")
         False
@@ -198,7 +198,7 @@ class ScalableBloomFilter(object):
         If the key already exists in this filter it will return True. 
         Otherwise False.
 
-        >>> b = ScalableBloomFilter(bits=8192, hashes=4, probability=0.001, \
+        >>> b = ScalableBloomFilter(bits=8192, probability=0.001, \
                                     mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> b.add("hello")
         False
@@ -206,27 +206,32 @@ class ScalableBloomFilter(object):
         True
 
         """
-        dupe = self.active_filter.add(key)
+        dupe = self.filter.add(key)
         if dupe:
             return dupe
-        if self.active_filter.count == self.active_filter.capacity:
-            new_prob = self.active_filter.p * self.r
-            new_hashes = int(math.ceil(self.active_filter.k + self.r))
-            new_bits = self.m * pow(self.s, len(self.filters))
-            new_filter = bloomfilter(bits=new_bits, hashes=new_hashes,
-                                     probability=new_prob)
-            self.active_filter = new_filter
-            self.filters.append(new_filter)
+        if self.filter.count == self.filter.capacity:
+            prob = self.filter.p * self.r
+            bits = self.m * pow(self.s, len(self.filters))
+            new_filter = BloomFilter(bits=bits, probability=prob)
+            self.filter = new_filter
+            self.filters = [new_filter] + self.filters
         return dupe
 
+    @property
     def capacity(self):
         """Returns the total capacity for all filters in this SBF"""
         return sum([f.capacity for f in self.filters])
+
+    @property
+    def count(self):
+        return len(self)
 
     def __len__(self):
         """Returns the total number of elements stored in this SBF"""
         return sum([f.count for f in self.filters])
 
+    def size(self):
+        return sum([len(f.filter) for f in self.filters])
 
 if __name__ == "__main__":
     import doctest
