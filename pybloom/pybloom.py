@@ -41,6 +41,9 @@ try:
 except ImportError:
     raise ImportError('pybloom requires bitarray >= 0.3.4')
 
+__version__ = '1.0.2'
+__author__  = "Jay Baird <jay@mochimedia.com>, Bob Ippolito <bob@redivi.com>"
+
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
         fmt_code, chunk_size = 'Q', 8
