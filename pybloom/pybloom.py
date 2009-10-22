@@ -180,6 +180,14 @@ class BloomFilter(object):
         self.count += 1
         return False
 
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        del d['make_hashes']
+        return d
+
+    def __setstate__(self, d):
+        self.__dict__.update(d)
+        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
 class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
