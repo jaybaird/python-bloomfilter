@@ -130,7 +130,7 @@ class BloomFilter(object):
         self.bits_per_slice = bits_per_slice
         self.capacity = capacity
         self.num_bits = num_slices * bits_per_slice
-        self.count = 0
+        self.count = count
         #print '\n'.join('%s = %s' % tpl for tpl in sorted(self.__dict__.items()))
         self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
