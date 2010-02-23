@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """This module implements a bloom filter probabilistic data structure and
 an a Scalable Bloom Filter that grows in size as your add more items to it
 without increasing the false positive error_rate.
@@ -68,7 +69,7 @@ def make_hashfuncs(num_slices, num_bits):
         num_salts += 1
     salts = [hashfn(hashfn(pack('I', i)).digest()) for i in xrange(num_salts)]
     def _make_hashfuncs(key):
-        if isinstance(key, basestring) and not isinstance(key, unicode):
+        if isinstance(key, unicode):
             key = key.encode('utf-8')
         else:
             key = str(key)
@@ -254,7 +255,11 @@ class ScalableBloomFilter(object):
         False
         >>> "test" in b
         True
-
+        >>> unicode_string = u'¡'
+        >>> b.add(unicode_string)
+        False
+        >>> unicode_string in b
+        True
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
