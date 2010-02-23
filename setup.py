@@ -6,7 +6,7 @@ import os
 
 from setuptools import setup, find_packages, Extension
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 DESCRIPTION = "PyBloom: A Probabilistic data structure"
 LONG_DESCRIPTION = """
 pybloom is a Python implementation of the bloom filter probabilistic data
