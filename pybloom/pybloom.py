@@ -42,7 +42,7 @@ try:
 except ImportError:
     raise ImportError('pybloom requires bitarray >= 0.3.4')
 
-__version__ = '1.0.3'
+__version__ = '1.1'
 __author__  = "Jay Baird <jay@mochimedia.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>, Alex Brassetvik <alex@brasetvik.com>"
 
@@ -187,6 +187,33 @@ class BloomFilter(object):
         self.count += 1
         return False
 
+    def copy(self):
+        """Return a copy of this bloom filter.
+        """
+        new_filter = BloomFilter(self.capacity, self.error_rate)
+        new_filter.bitarray = self.bitarray.copy()
+        return new_filter
+
+    def union(self, other):
+        """ Calculates the union of the two underlying bitarrays and returns
+        a new bloom filter object."""
+        new_bloom = self.copy()
+        new_bloom.bitarray = new_bloom.bitarray | other.bitarray
+        return new_bloom
+
+    def __or__(self, other):
+        return self.union(other)
+
+    def intersection(self, other):
+        """ Calculates the union of the two underlying bitarrays and returns
+        a new bloom filter object."""
+        new_bloom = self.copy()
+        new_bloom.bitarray = new_bloom.bitarray & other.bitarray
+        return new_bloom
+    
+    def __and__(self, other):
+        return self.intersection(other)
+        
     def tofile(self, f):
         """Write the bloom filter to file object `f'. Underlying bits
         are written as machine values. This is much more space
