@@ -5,7 +5,7 @@ import random
 import tempfile
 from pybloom import BloomFilter, ScalableBloomFilter
 from unittest import TestSuite
- 
+
 def additional_tests():
     proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     readme_fn = os.path.join(proj_dir, 'README.txt')
@@ -25,8 +25,8 @@ class TestUnionIntersection(unittest.TestCase):
             bloom_two.add(char)
         new_bloom = bloom_one.union(bloom_two)
         for char in chars:
-            assert(char in new_bloom)
-            
+            self.assert_(char in new_bloom)
+
     def test_intersection(self):
         bloom_one = BloomFilter(100, 0.001)
         bloom_two = BloomFilter(100, 0.001)
@@ -37,9 +37,37 @@ class TestUnionIntersection(unittest.TestCase):
             bloom_two.add(char)
         new_bloom = bloom_one.intersection(bloom_two)
         for char in chars[:len(chars)/2]:
-            assert(char in new_bloom)
+            self.assert_(char in new_bloom)
         for char in chars[len(chars)/2:]:
-            assert(char not in new_bloom)    
+            self.assert_(char not in new_bloom)
+
+    def test_intersection_capacity_fail(self):
+        bloom_one = BloomFilter(1000, 0.001)
+        bloom_two = BloomFilter(100, 0.001)
+        def _run():
+            new_bloom = bloom_one.intersection(bloom_two)
+        self.assertRaises(ValueError, _run)
+
+    def test_union_capacity_fail(self):
+        bloom_one = BloomFilter(1000, 0.001)
+        bloom_two = BloomFilter(100, 0.001)
+        def _run():
+            new_bloom = bloom_one.union(bloom_two)
+        self.assertRaises(ValueError, _run)
+
+    def test_intersection_k_fail(self):
+        bloom_one = BloomFilter(100, 0.001)
+        bloom_two = BloomFilter(100, 0.01)
+        def _run():
+            new_bloom = bloom_one.intersection(bloom_two)
+        self.assertRaises(ValueError, _run)
+
+    def test_union_k_fail(self):
+        bloom_one = BloomFilter(100, 0.01)
+        bloom_two = BloomFilter(100, 0.001)
+        def _run():
+            new_bloom = bloom_one.union(bloom_two)
+        self.assertRaises(ValueError, _run)
 
 class Serialization(unittest.TestCase):
     SIZE = 12345
