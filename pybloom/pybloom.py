@@ -45,7 +45,7 @@ except ImportError:
 __version__ = '1.1'
 __author__  = "Jay Baird <jay@mochimedia.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
-               Alex Brassetvik <alex@brasetvik.com>"
+               Alex Brasetvik <alex@brasetvik.com>"
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
