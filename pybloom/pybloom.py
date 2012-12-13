@@ -117,10 +117,8 @@ class BloomFilter(object):
         # n ~= (k * m) * ((ln(2) ** 2) / abs(ln(P)))
         # m ~= n * abs(ln(P)) / (k * (ln(2) ** 2))
         num_slices = int(math.ceil(math.log(1 / error_rate, 2)))
-        # the error_rate constraint assumes a fill rate of 1/2
-        # so we double the capacity to simplify the API
         bits_per_slice = int(math.ceil(
-            (2 * capacity * abs(math.log(error_rate))) /
+            (capacity * abs(math.log(error_rate))) /
             (num_slices * (math.log(2) ** 2))))
         self._setup(error_rate, num_slices, bits_per_slice, capacity, 0)
         self.bitarray = bitarray.bitarray(self.num_bits, endian='little')
