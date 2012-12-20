@@ -70,6 +70,22 @@ def make_hashfuncs(num_slices, num_bits):
     if extra:
         num_salts += 1
     salts = [hashfn(hashfn(pack('I', i)).digest()) for i in xrange(num_salts)]
+    # Wrappers for hashfn are defined; each produces a list of
+    # bloom filter bit positions, one position per slice
+    def _make_single_hash_function(key):
+        h = hasher.copy()
+        if isinstance(key, unicode):
+            h.update( key.encode('utf-8'))
+        else:
+            h.update(str(key))
+        return [uint % num_bits for uint in unpack(fmt, h.digest())]
+    def _make_single_hash_function_trim(key):
+        h = hasher.copy()
+        if isinstance(key, unicode):
+            h.update( key.encode('utf-8'))
+        else:
+            h.update(str(key))
+        return [ uint % num_bits for uint in unpack(fmt, (h.digest())[:trim_digest]) ]
     def _make_hashfuncs(key):
         if isinstance(key, unicode):
             key = key.encode('utf-8')
@@ -82,8 +98,21 @@ def make_hashfuncs(num_slices, num_bits):
             rval.extend(uint % num_bits for uint in unpack(fmt, h.digest()))
         del rval[num_slices:]
         return rval
-    return _make_hashfuncs
-
+    # Return one of the defined wrappers; a simpler/faster function 
+    # is selected if possible
+    if num_salts == 1:
+        hasher = salts[0]
+        if len(fmt) == num_slices:
+            # Use single hasher with the full length of the hash digest
+            return _make_single_hash_function
+        else:
+            # When the full hash digest is not needed, cue wrapper to 
+            # trim the digest
+            fmt = fmt[:num_slices]
+            trim_digest = num_slices*chunk_size
+            return _make_single_hash_function_trim 
+    else: # use the generic method supporting multiple hash functions
+        return _make_hashfuncs
 
 class BloomFilter(object):
     FILE_FMT = '<dQQQQ'
