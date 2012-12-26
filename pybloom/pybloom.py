@@ -16,7 +16,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     False
     >>> len(f) <= f.capacity
     True
-    >>> abs((len(f) / float(f.capacity)) - 1.0) <= f.error_rate
+    >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
     True
 
     >>> from pybloom import ScalableBloomFilter
@@ -29,7 +29,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     True
     >>> len(sbf) <= count
     True
-    >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
+    >>> (1.0 - (len(sbf) / float(count))) <= sbf.error_rate + 2e-18
     True
 
 """
@@ -42,8 +42,8 @@ try:
 except ImportError:
     raise ImportError('pybloom requires bitarray >= 0.3.4')
 
-__version__ = '1.1'
-__author__  = "Jay Baird <jay@mochimedia.com>, Bob Ippolito <bob@redivi.com>,\
+__version__ = '2.0'
+__author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
                Alex Brasetvik <alex@brasetvik.com>"
 
@@ -111,12 +111,13 @@ class BloomFilter(object):
             raise ValueError("Error_Rate must be between 0 and 1.")
         if not capacity > 0:
             raise ValueError("Capacity must be > 0")
-        # given M = num_bits, k = num_slices, p = error_rate, n = capacity
+        # given M = num_bits, k = num_slices, P = error_rate, n = capacity
+        #       k = log2(1/P)
         # solving for m = bits_per_slice
         # n ~= M * ((ln(2) ** 2) / abs(ln(P)))
         # n ~= (k * m) * ((ln(2) ** 2) / abs(ln(P)))
         # m ~= n * abs(ln(P)) / (k * (ln(2) ** 2))
-        num_slices = int(math.ceil(math.log(1 / error_rate, 2)))
+        num_slices = int(math.ceil(math.log(1.0 / error_rate, 2)))
         bits_per_slice = int(math.ceil(
             (capacity * abs(math.log(error_rate))) /
             (num_slices * (math.log(2) ** 2))))
@@ -337,13 +338,18 @@ class ScalableBloomFilter(object):
         """
         if key in self:
             return True
-        filter = self.filters[-1] if self.filters else None
-        if filter is None or filter.count >= filter.capacity:
-            num_filters = len(self.filters)
+        if not self.filters:
             filter = BloomFilter(
-                capacity=self.initial_capacity * (self.scale ** num_filters),
-                error_rate=self.error_rate * (self.ratio ** num_filters))
+                capacity=self.initial_capacity,
+                error_rate=self.error_rate * (1.0 - self.ratio))
             self.filters.append(filter)
+        else:
+            filter = self.filters[-1]
+            if filter.count >= filter.capacity:
+                filter = BloomFilter(
+                    capacity=filter.capacity * self.scale,
+                    error_rate=filter.error_rate * self.ratio)
+                self.filters.append(filter)
         filter.add(key, skip_check=True)
         return False
 
