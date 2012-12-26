@@ -27,7 +27,7 @@ True
 >>> f = BloomFilter(capacity=1000, error_rate=0.001)
 >>> for i in xrange(0, f.capacity):
 ...     _ = f.add(i)
->>> abs((len(f) / float(f.capacity)) - 1.0) <= f.error_rate
+>>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
 True
 
 >>> from pybloom import ScalableBloomFilter
@@ -36,8 +36,9 @@ True
 >>> for i in xrange(0, count):
 ...     _ = sbf.add(i)
 ...
->>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
+>>> (1.0 - (len(sbf) / float(count))) <= sbf.error_rate + 2e-18
 True
 
-# len(sbf) may not equal the entire input length. 0.006% error is well
-# below the default 0.1% error threshold
+# len(sbf) may not equal the entire input length. 0.01% error is well
+# below the default 0.1% error threshold. As the capacity goes up, the
+# error will approach 0.1%.

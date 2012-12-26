@@ -1,3 +1,11 @@
+Changes in 2.0
+==============
+Made major corrections to the algorithms for both BloomFilter and
+ScalableBloomFilter. Not numerically compatible with serialized
+representations of filters from previous versions. Specifically,
+BloomFilter was more accurate than requested and ScalableBloomFilter
+was much less accurate than requested.
+
 Changes in 1.1
 ==============
 Added copy, intersection and union functions to BloomFilter
