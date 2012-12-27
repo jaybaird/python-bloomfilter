@@ -6,16 +6,16 @@ import os
 
 from setuptools import setup, find_packages, Extension
 
-VERSION = '1.0.3'
+VERSION = '2.0.0'
 DESCRIPTION = "PyBloom: A Probabilistic data structure"
 LONG_DESCRIPTION = """
 pybloom is a Python implementation of the bloom filter probabilistic data
-structure. The module also provides a Scalable Bloom Filter that allows a 
+structure. The module also provides a Scalable Bloom Filter that allows a
 bloom filter to grow without knowing the original set size.
 """
 
 CLASSIFIERS = filter(None, map(str.strip,
-"""                 
+"""
 Intended Audience :: Developers
 License :: OSI Approved :: MIT License
 Programming Language :: Python
