@@ -35,6 +35,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 """
 import math
 import hashlib
+from StringIO import StringIO
 from struct import unpack, pack, calcsize
 
 try:
@@ -227,7 +228,10 @@ have equal capacity and error rate")
         efficient than pickling the object."""
         f.write(pack(self.FILE_FMT, self.error_rate, self.num_slices,
                      self.bits_per_slice, self.capacity, self.count))
-        self.bitarray.tofile(f)
+        if isinstance(f, StringIO):
+            f.write(self.bitarray.tostring())
+        else:
+            self.bitarray.tofile(f)
 
     @classmethod
     def fromfile(cls, f, n=-1):
@@ -242,9 +246,15 @@ have equal capacity and error rate")
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
         filter.bitarray = bitarray.bitarray(endian='little')
         if n > 0:
-            filter.bitarray.fromfile(f, n - headerlen)
+            if isinstance(f, StringIO):
+                filter.bitarray.fromstring(f.read(n - headerlen))
+            else:
+                filter.bitarray.fromfile(f, n - headerlen)
         else:
-            filter.bitarray.fromfile(f)
+            if isinstance(f, StringIO):
+                filter.bitarray.fromstring(f.read())
+            else:
+                filter.bitarray.fromfile(f)
         if filter.num_bits != filter.bitarray.length() and \
                (filter.num_bits + (8 - filter.num_bits % 8)
                 != filter.bitarray.length()):
