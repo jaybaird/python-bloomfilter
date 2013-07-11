@@ -208,7 +208,7 @@ both the same capacity and error rate")
         return self.union(other)
 
     def intersection(self, other):
-        """ Calculates the union of the two underlying bitarrays and returns
+        """ Calculates the intersection of the two underlying bitarrays and returns
         a new bloom filter object."""
         if self.capacity != other.capacity or \
             self.error_rate != other.error_rate:
