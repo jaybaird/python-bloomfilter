@@ -69,19 +69,22 @@ def make_hashfuncs(num_slices, num_bits):
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
-    salts = [hashfn(hashfn(pack('I', i)).digest()) for i in xrange(num_salts)]
+    salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in xrange(num_salts))
     def _make_hashfuncs(key):
         if isinstance(key, unicode):
             key = key.encode('utf-8')
         else:
             key = str(key)
-        rval = []
+        i = 0
         for salt in salts:
             h = salt.copy()
             h.update(key)
-            rval.extend(uint % num_bits for uint in unpack(fmt, h.digest()))
-        del rval[num_slices:]
-        return rval
+            for uint in unpack(fmt, h.digest()):
+                yield uint % num_bits
+                i += 1
+                if i >= num_slices:
+                    return
+
     return _make_hashfuncs
 
 
@@ -146,10 +149,7 @@ class BloomFilter(object):
         """
         bits_per_slice = self.bits_per_slice
         bitarray = self.bitarray
-        if not isinstance(key, list):
-            hashes = self.make_hashes(key)
-        else:
-            hashes = key
+        hashes = self.make_hashes(key)
         offset = 0
         for k in hashes:
             if not bitarray[offset + k]:
@@ -175,16 +175,17 @@ class BloomFilter(object):
         bitarray = self.bitarray
         bits_per_slice = self.bits_per_slice
         hashes = self.make_hashes(key)
-        if not skip_check and hashes in self:
-            return True
+        found_all_bits = True
         if self.count > self.capacity:
             raise IndexError("BloomFilter is at capacity")
         offset = 0
         for k in hashes:
+            if not skip_check and found_all_bits and not bitarray[offset + k]:
+                found_all_bits = False
             self.bitarray[offset + k] = True
             offset += bits_per_slice
         self.count += 1
-        return False
+        return not skip_check and found_all_bits
 
     def copy(self):
         """Return a copy of this bloom filter.
