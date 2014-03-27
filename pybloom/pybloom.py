@@ -366,7 +366,7 @@ class ScalableBloomFilter(object):
     @property
     def capacity(self):
         """Returns the total capacity for all filters in this SBF"""
-        return sum([f.capacity for f in self.filters])
+        return sum(f.capacity for f in self.filters)
 
     @property
     def count(self):
@@ -415,7 +415,7 @@ class ScalableBloomFilter(object):
 
     def __len__(self):
         """Returns the total number of elements stored in this SBF"""
-        return sum([f.count for f in self.filters])
+        return sum(f.count for f in self.filters)
 
 
 if __name__ == "__main__":
