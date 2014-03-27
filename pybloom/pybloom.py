@@ -170,6 +170,8 @@ class BloomFilter(object):
         False
         >>> b.add("hello")
         True
+        >>> b.count
+        1
 
         """
         bitarray = self.bitarray
@@ -184,8 +186,15 @@ class BloomFilter(object):
                 found_all_bits = False
             self.bitarray[offset + k] = True
             offset += bits_per_slice
-        self.count += 1
-        return not skip_check and found_all_bits
+
+        if skip_check:
+            self.count += 1
+            return False
+        elif not found_all_bits:
+            self.count += 1
+            return False
+        else:
+            return True
 
     def copy(self):
         """Return a copy of this bloom filter.
