@@ -7,7 +7,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
     >>> from pybloom import BloomFilter
     >>> f = BloomFilter(capacity=10000, error_rate=0.001)
-    >>> for i in xrange(0, f.capacity):
+    >>> for i in sm.range(0, f.capacity):
     ...     _ = f.add(i)
     ...
     >>> 0 in f
@@ -22,7 +22,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     >>> from pybloom import ScalableBloomFilter
     >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
     >>> count = 10000
-    >>> for i in xrange(0, count):
+    >>> for i in sm.range(0, count):
     ...     _ = sbf.add(i)
     ...
     >>> sbf.capacity > count
@@ -35,6 +35,8 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 """
 import math
 import hashlib
+import six
+import six.moves as sm
 from struct import unpack, pack, calcsize
 
 try:
@@ -69,12 +71,15 @@ def make_hashfuncs(num_slices, num_bits):
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
-    salts = [hashfn(hashfn(pack('I', i)).digest()) for i in xrange(num_salts)]
+    salts = [hashfn(hashfn(pack('I', i)).digest()) for i in sm.range(num_salts)]
     def _make_hashfuncs(key):
-        if isinstance(key, unicode):
+        if isinstance(key, six.string_types):
             key = key.encode('utf-8')
         else:
+            # Using six.binary_types here is super slow so I do this odd thing instead
             key = str(key)
+            if isinstance(key, six.string_types):
+                key = key.encode('utf-8')
         rval = []
         for salt in salts:
             h = salt.copy()
@@ -236,7 +241,7 @@ have equal capacity and error rate")
         headerlen = calcsize(cls.FILE_FMT)
 
         if 0 < n < headerlen:
-            raise ValueError, 'n too small!'
+            raise ValueError('n too small!')
 
         filter = cls(1)  # Bogus instantiation, we will `_setup'.
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
@@ -248,7 +253,7 @@ have equal capacity and error rate")
         if filter.num_bits != filter.bitarray.length() and \
                (filter.num_bits + (8 - filter.num_bits % 8)
                 != filter.bitarray.length()):
-            raise ValueError, 'Bit length mismatch!'
+            raise ValueError('Bit length mismatch!')
 
         return filter
 
@@ -369,14 +374,14 @@ class ScalableBloomFilter(object):
                      self.initial_capacity, self.error_rate))
 
         # Write #-of-filters
-        f.write(pack('<l', len(self.filters)))
+        f.write(pack(b'<l', len(self.filters)))
 
         if len(self.filters) > 0:
             # Then each filter directly, with a header describing
             # their lengths.
             headerpos = f.tell()
-            headerfmt = '<' + 'Q'*(len(self.filters))
-            f.write('.' * calcsize(headerfmt))
+            headerfmt = b'<' + b'Q'*(len(self.filters))
+            f.write(b'.' * calcsize(headerfmt))
             filter_sizes = []
             for filter in self.filters:
                 begin = f.tell()
@@ -391,9 +396,9 @@ class ScalableBloomFilter(object):
         """Deserialize the ScalableBloomFilter in file object `f'."""
         filter = cls()
         filter._setup(*unpack(cls.FILE_FMT, f.read(calcsize(cls.FILE_FMT))))
-        nfilters, = unpack('<l', f.read(calcsize('<l')))
+        nfilters, = unpack(b'<l', f.read(calcsize(b'<l')))
         if nfilters > 0:
-            header_fmt = '<' + 'Q'*nfilters
+            header_fmt = b'<' + b'Q'*nfilters
             bytes = f.read(calcsize(header_fmt))
             filter_lengths = unpack(header_fmt, bytes)
             for fl in filter_lengths:
