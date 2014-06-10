@@ -1,1 +1,2 @@
 bitarray>=0.3.4
+six
