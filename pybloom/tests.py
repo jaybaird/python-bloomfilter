@@ -1,3 +1,5 @@
+import StringIO
+import cStringIO
 import os
 import doctest
 import unittest
@@ -80,17 +82,23 @@ class Serialization(unittest.TestCase):
             for item in self.EXPECTED:
                 filter.add(item)
 
-            # It seems bitarray is finicky about the object being an
-            # actual file, so we can't just use StringIO. Grr.
             f = tempfile.TemporaryFile()
             filter.tofile(f)
+
+            stringio = StringIO.StringIO()
+            cstringio = cStringIO.StringIO()
+            filter.tofile(stringio)
+            filter.tofile(cstringio)
             del filter
 
             f.seek(0)
-            filter = klass.fromfile(f)
-
-            for item in self.EXPECTED:
-                self.assert_(item in filter)
+            stringio.seek(0)
+            cstringio.seek(0)
+            for filter in (klass.fromfile(f),
+                           klass.fromfile(stringio),
+                           klass.fromfile(cstringio)):
+                for item in self.EXPECTED:
+                    self.assert_(item in filter)
 
 if __name__ == '__main__':
     unittest.main()

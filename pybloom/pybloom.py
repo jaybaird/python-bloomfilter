@@ -36,6 +36,8 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 import math
 import hashlib
 from struct import unpack, pack, calcsize
+import StringIO
+import cStringIO
 
 try:
     import bitarray
@@ -45,7 +47,9 @@ except ImportError:
 __version__ = '2.0'
 __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
-               Alex Brasetvik <alex@brasetvik.com>"
+               Alex Brasetvik <alex@brasetvik.com>,\
+               Matt Bachmann <bachmann.matt@gmail.com>,\
+              "
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
@@ -227,7 +231,10 @@ have equal capacity and error rate")
         efficient than pickling the object."""
         f.write(pack(self.FILE_FMT, self.error_rate, self.num_slices,
                      self.bits_per_slice, self.capacity, self.count))
-        self.bitarray.tofile(f)
+        (f.write(self.bitarray.tobytes()) if isinstance(f, (StringIO.StringIO,
+                                                            cStringIO.InputType,
+                                                            cStringIO.OutputType))
+         else self.bitarray.tofile(f))
 
     @classmethod
     def fromfile(cls, f, n=-1):
@@ -242,9 +249,16 @@ have equal capacity and error rate")
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
         filter.bitarray = bitarray.bitarray(endian='little')
         if n > 0:
-            filter.bitarray.fromfile(f, n - headerlen)
+            (filter.bitarray.frombytes(f.read(n-headerlen))
+             if isinstance(f, (StringIO.StringIO,
+                               cStringIO.InputType,
+                               cStringIO.OutputType))
+             else filter.bitarray.fromfile(f, n - headerlen))
         else:
-            filter.bitarray.fromfile(f)
+            (filter.bitarray.frombytes(f.read()) if isinstance(f, (StringIO.StringIO,
+                                                                   cStringIO.InputType,
+                                                                   cStringIO.OutputType))
+             else filter.bitarray.fromfile(f))
         if filter.num_bits != filter.bitarray.length() and \
                (filter.num_bits + (8 - filter.num_bits % 8)
                 != filter.bitarray.length()):
