@@ -1,7 +1,8 @@
 pybloom
 =======
 
-|build|_
+.. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
+    :target: https://travis-ci.org/jaybaird/python-bloomfilter
 
 ``pybloom`` is a module that includes a Bloom Filter data structure along with
 an implmentation of Scalable Bloom Filters as discussed in:
