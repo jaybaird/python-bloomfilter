@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-from ez_setup import use_setuptools
-use_setuptools()
-
-import os
-
-from setuptools import setup, find_packages, Extension
+from setuptools import setup
 
 VERSION = '2.0.0'
 DESCRIPTION = "PyBloom: A Probabilistic data structure"
@@ -19,6 +14,7 @@ CLASSIFIERS = filter(None, map(str.strip,
 Intended Audience :: Developers
 License :: OSI Approved :: MIT License
 Programming Language :: Python
+Programming Language :: Python :: 3",
 Operating System :: OS Independent
 Topic :: Utilities
 Topic :: Database :: Database Engines/Servers
@@ -37,7 +33,6 @@ setup(
     author_email="jay.baird@me.com",
     url="http://github.com/jaybaird/python-bloomfilter/",
     license="MIT License",
-    packages=find_packages(exclude=['ez_setup']),
     platforms=['any'],
     test_suite="pybloom.tests",
     zip_safe=True,
