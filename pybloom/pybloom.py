@@ -206,6 +206,23 @@ class BloomFilter(object):
         else:
             return True
 
+    def add_return_bits(self, key):
+        """ Adds a key to this bloom filter and return a list of bit indices set."""
+        bits_per_slice = self.bits_per_slice
+        hashes = self.make_hashes(key)
+        if self.count > self.capacity:
+            raise IndexError("BloomFilter is at capacity")
+
+        offset = 0
+        indices = []
+
+        for k in hashes:
+            self.bitarray[offset + k] = True
+            indices.append(offset + k)
+            offset += bits_per_slice
+
+        return indices
+
     def copy(self):
         """Return a copy of this bloom filter.
         """
