@@ -38,6 +38,16 @@ functions.
     >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
     True
 
+    # f.nstar() function returns an estimate of the number of elements in 
+    # the Bloom filter f.
+
+    >>> print f.nstar()
+
+    # f1.nstar_intersection(f2) returns an estimate of the number of elements in 
+    # the intersection between the filters f1 and f2.
+
+    >>> print f1.nstar_intersection(f2)
+
     >>> from pybloom import ScalableBloomFilter
     >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
     >>> count = 10000
@@ -50,3 +60,4 @@ functions.
     # len(sbf) may not equal the entire input length. 0.01% error is well
     # below the default 0.1% error threshold. As the capacity goes up, the
     # error will approach 0.1%.
+

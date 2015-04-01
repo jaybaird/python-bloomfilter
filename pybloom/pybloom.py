@@ -171,6 +171,15 @@ class BloomFilter(object):
         """Return the number of keys stored by this bloom filter."""
         return self.count
 
+    def nstar(self):
+        #from http://en.wikipedia.org/wiki/Bloom_filter (The union and intersection of sets)
+        return -self.num_bits*math.log(1-float(self.bitarray.count(True))/float(self.num_bits))/self.num_slices
+
+    def nstar_intersection(self,bloom):
+        #from http://en.wikipedia.org/wiki/Bloom_filter (The union and intersection of sets)
+        new_bloom = self.union(bloom)
+        return self.nstar()+bloom.nstar()-new_bloom.nstar()
+
     def add(self, key, skip_check=False):
         """ Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
