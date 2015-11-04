@@ -290,7 +290,7 @@ class ScalableBloomFilter(object):
     FILE_FMT = '<idQd'
 
     def __init__(self, initial_capacity=100, error_rate=0.001,
-                 mode=SMALL_SET_GROWTH):
+                 mode=LARGE_SET_GROWTH):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
         positive rate
@@ -364,7 +364,7 @@ class ScalableBloomFilter(object):
         if not self.filters:
             filter = BloomFilter(
                 capacity=self.initial_capacity,
-                error_rate=self.error_rate * (1.0 - self.ratio))
+                error_rate=self.error_rate * self.ratio)
             self.filters.append(filter)
         else:
             filter = self.filters[-1]
