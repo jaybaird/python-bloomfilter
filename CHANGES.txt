@@ -1,3 +1,10 @@
+Changes in 2.1
+==============
+The tightening ratio is 0.9, and it is consistently used.
+Choosing r around 0.8 - 0.9 will result in better average
+space usage for wide range of growth, therefore the default
+value of mode is set to LARGE_SET_GROWTH.
+
 Changes in 2.0
 ==============
 Made major corrections to the algorithms for both BloomFilter and

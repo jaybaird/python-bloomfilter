@@ -1,10 +1,10 @@
-pybloom
+Python bloom filter
 =======
 
-.. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
-    :target: https://travis-ci.org/jaybaird/python-bloomfilter
+.. image:: https://travis-ci.org/joseph-fox/python-bloomfilter.svg?branch=master
+    :target: https://travis-ci.org/joseph-fox/python-bloomfilter
 
-``pybloom`` is a module that includes a Bloom Filter data structure along with
+This ``bloom filter`` is forked from ``pybloom``, and it is a module that includes a Bloom Filter data structure along with
 an implmentation of Scalable Bloom Filters as discussed in:
 
 P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters,
