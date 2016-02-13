@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from pybloom.pybloom import BloomFilter, ScalableBloomFilter
-from pybloom.utils import running_python_3, range_fn
+from pybloom_live.pybloom import BloomFilter, ScalableBloomFilter
+from pybloom_live.utils import running_python_3, range_fn
 
 try:
     from StringIO import StringIO
@@ -14,13 +14,15 @@ import random
 import tempfile
 from unittest import TestSuite
 
+
 def additional_tests():
     proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     readme_fn = os.path.join(proj_dir, 'README.txt')
-    suite = TestSuite([doctest.DocTestSuite('pybloom.pybloom')])
+    suite = TestSuite([doctest.DocTestSuite('pybloom_live.pybloom_live')])
     if os.path.exists(readme_fn):
         suite.addTest(doctest.DocFileSuite(readme_fn, module_relative=False))
     return suite
+
 
 class TestUnionIntersection(unittest.TestCase):
     def test_union(self):
@@ -76,6 +78,7 @@ class TestUnionIntersection(unittest.TestCase):
         def _run():
             new_bloom = bloom_one.union(bloom_two)
         self.assertRaises(ValueError, _run)
+
 
 class Serialization(unittest.TestCase):
     SIZE = 12345

@@ -4,7 +4,7 @@ from setuptools import setup
 VERSION = '2.1.0'
 DESCRIPTION = "Bloom filter: A Probabilistic data structure"
 LONG_DESCRIPTION = """
-This bloom filter is forked from pybloom, and it is a Python implementation of the bloom filter probabilistic data
+This bloom filter is forked from pybloom_live, and it is a Python implementation of the bloom filter probabilistic data
 structure. The module also provides a Scalable Bloom Filter that allows a
 bloom filter to grow without knowing the original set size.
 """
@@ -22,7 +22,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 """.splitlines()))
 
 setup(
-    name="pybloomfilter-live",
+    name="pybloom_live",
     version=VERSION,
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
@@ -34,8 +34,8 @@ setup(
     url="https://github.com/joseph-fox/python-bloomfilter",
     license="MIT License",
     platforms=['any'],
-    test_suite="pybloom.tests",
+    test_suite="pybloom_live.tests",
     zip_safe=True,
     install_requires=['bitarray>=0.3.4'],
-    packages=['pybloomfilter-live']
+    packages=['pybloom_live']
 )

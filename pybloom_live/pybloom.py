@@ -5,7 +5,7 @@ without increasing the false positive error_rate.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
-    >>> from pybloom import BloomFilter
+    >>> from pybloom_live import BloomFilter
     >>> f = BloomFilter(capacity=10000, error_rate=0.001)
     >>> for i in range_fn(0, f.capacity):
     ...     _ = f.add(i)
@@ -19,7 +19,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
     True
 
-    >>> from pybloom import ScalableBloomFilter
+    >>> from pybloom_live import ScalableBloomFilter
     >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
     >>> count = 10000
     >>> for i in range_fn(0, count):
@@ -36,13 +36,13 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 from __future__ import absolute_import
 import math
 import hashlib
-from pybloom.utils import range_fn, is_string_io, running_python_3
+from pybloom_live.utils import range_fn, is_string_io, running_python_3
 from struct import unpack, pack, calcsize
 
 try:
     import bitarray
 except ImportError:
-    raise ImportError('pybloom requires bitarray >= 0.3.4')
+    raise ImportError('pybloom_live requires bitarray >= 0.3.4')
 
 __version__ = '2.0'
 __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
@@ -50,6 +50,7 @@ __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Alex Brasetvik <alex@brasetvik.com>,\
                Matt Bachmann <bachmann.matt@gmail.com>,\
               "
+
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
@@ -74,6 +75,7 @@ def make_hashfuncs(num_slices, num_bits):
     if extra:
         num_salts += 1
     salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
+
     def _make_hashfuncs(key):
         if running_python_3:
             if isinstance(key, str):
@@ -283,6 +285,7 @@ have equal capacity and error rate")
     def __setstate__(self, d):
         self.__dict__.update(d)
         self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+
 
 class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
