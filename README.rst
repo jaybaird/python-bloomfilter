@@ -4,8 +4,9 @@ Python bloom filter
 .. image:: https://travis-ci.org/joseph-fox/python-bloomfilter.svg?branch=master
     :target: https://travis-ci.org/joseph-fox/python-bloomfilter
 
-This ``bloom filter`` is forked from ``pybloom``, and it is a module that includes a Bloom Filter data structure along with
-an implmentation of Scalable Bloom Filters as discussed in:
+This ``bloom filter`` is forked from ``pybloom``, and its tightening ratio is changed to 0.9 and this ration is consistently used.
+Choosing r around 0.8 - 0.9 will result in better average space usage for wide range of growth, therefore the default value of model is set to LARGE_SET_GROWTH.
+This is a module that includes a Bloom Filter data structure along with an implementation of Scalable Bloom Filters as discussed in:
 
 P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters,
 (GLOBECOM 2007), IEEE, 2007.
