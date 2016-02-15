@@ -51,3 +51,7 @@ functions.
     # len(sbf) may not equal the entire input length. 0.01% error is well
     # below the default 0.1% error threshold. As the capacity goes up, the
     # error will approach 0.1%.
+***************
+Development
+***************
+We follow this `git branching model <http://nvie.com/posts/a-successful-git-branching-model/>`_, please have a look at it.
