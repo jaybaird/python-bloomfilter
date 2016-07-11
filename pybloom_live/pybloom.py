@@ -1,37 +1,8 @@
-# -*- encoding: utf-8 -*-
 """This module implements a bloom filter probabilistic data structure and
 an a Scalable Bloom Filter that grows in size as your add more items to it
 without increasing the false positive error_rate.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
-
-    >>> from pybloom_live import BloomFilter
-    >>> f = BloomFilter(capacity=10000, error_rate=0.001)
-    >>> for i in range_fn(0, f.capacity):
-    ...     _ = f.add(i)
-    ...
-    >>> 0 in f
-    True
-    >>> f.capacity in f
-    False
-    >>> len(f) <= f.capacity
-    True
-    >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
-    True
-
-    >>> from pybloom_live import ScalableBloomFilter
-    >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-    >>> count = 10000
-    >>> for i in range_fn(0, count):
-    ...     _ = sbf.add(i)
-    ...
-    >>> sbf.capacity > count
-    True
-    >>> len(sbf) <= count
-    True
-    >>> (1.0 - (len(sbf) / float(count))) <= sbf.error_rate + 2e-18
-    True
-
 """
 from __future__ import absolute_import
 import math
@@ -43,13 +14,6 @@ try:
     import bitarray
 except ImportError:
     raise ImportError('pybloom_live requires bitarray >= 0.3.4')
-
-__version__ = '2.0'
-__author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
-               Marius Eriksen <marius@monkey.org>,\
-               Alex Brasetvik <alex@brasetvik.com>,\
-               Matt Bachmann <bachmann.matt@gmail.com>,\
-              "
 
 
 def make_hashfuncs(num_slices, num_bits):
@@ -114,13 +78,6 @@ class BloomFilter(object):
             the error_rate of the filter returning false positives. This
             determines the filters capacity. Inserting more than capacity
             elements greatly increases the chance of false positives.
-
-        >>> b = BloomFilter(capacity=100000, error_rate=0.001)
-        >>> b.add("test")
-        False
-        >>> "test" in b
-        True
-
         """
         if not (0 < error_rate < 1):
             raise ValueError("Error_Rate must be between 0 and 1.")
@@ -151,13 +108,6 @@ class BloomFilter(object):
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
-
-        >>> b = BloomFilter(capacity=100)
-        >>> b.add("hello")
-        False
-        >>> "hello" in b
-        True
-
         """
         bits_per_slice = self.bits_per_slice
         bitarray = self.bitarray
@@ -176,15 +126,6 @@ class BloomFilter(object):
     def add(self, key, skip_check=False):
         """ Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
-
-        >>> b = BloomFilter(capacity=100)
-        >>> b.add("hello")
-        False
-        >>> b.add("hello")
-        True
-        >>> b.count
-        1
-
         """
         bitarray = self.bitarray
         bits_per_slice = self.bits_per_slice
@@ -309,18 +250,6 @@ class ScalableBloomFilter(object):
             ScalableBloomFilter.LARGE_SET_GROWTH. SMALL_SET_GROWTH is slower
             but uses less memory. LARGE_SET_GROWTH is faster but consumes
             memory faster.
-
-        >>> b = ScalableBloomFilter(initial_capacity=512, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("test")
-        False
-        >>> "test" in b
-        True
-        >>> unicode_string = u'¡'
-        >>> b.add(unicode_string)
-        False
-        >>> unicode_string in b
-        True
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
@@ -335,14 +264,6 @@ class ScalableBloomFilter(object):
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
-
-        >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("hello")
-        False
-        >>> "hello" in b
-        True
-
         """
         for f in reversed(self.filters):
             if key in f:
@@ -353,14 +274,6 @@ class ScalableBloomFilter(object):
         """Adds a key to this bloom filter.
         If the key already exists in this filter it will return True.
         Otherwise False.
-
-        >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("hello")
-        False
-        >>> b.add("hello")
-        True
-
         """
         if key in self:
             return True

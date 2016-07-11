@@ -7,21 +7,10 @@ try:
     import cStringIO
 except ImportError:
     from io import BytesIO as StringIO
-import os
-import doctest
+
 import unittest
 import random
 import tempfile
-from unittest import TestSuite
-
-
-def additional_tests():
-    proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    readme_fn = os.path.join(proj_dir, 'README.txt')
-    suite = TestSuite([doctest.DocTestSuite('pybloom_live.pybloom_live')])
-    if os.path.exists(readme_fn):
-        suite.addTest(doctest.DocFileSuite(readme_fn, module_relative=False))
-    return suite
 
 
 class TestUnionIntersection(unittest.TestCase):
