@@ -222,6 +222,11 @@ class BloomFilter(object):
 both the same capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray | other.bitarray
+        # Set the new count
+        # https://en.wikipedia.org/wiki/Bloom_filter#The_union_and_intersection_of_sets
+        #new_bloom.count = int(round(-(float(self.num_bits) / float(self.num_slices)) * math.log(1 - (float(new_bloom.bitarray.count(1)) / float(self.num_bits))), 0))
+        new_bloom.count = int(round(-float(self.bits_per_slice) * math.log(
+            1 - (float(new_bloom.bitarray.count(1)) / float(self.num_bits))), 0))
         return new_bloom
 
     def __or__(self, other):

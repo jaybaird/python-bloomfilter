@@ -35,6 +35,36 @@ class TestUnionIntersection(unittest.TestCase):
         for char in chars:
             self.assertTrue(char in new_bloom)
 
+    def test_union_size(self):
+        fpr = 0.001
+        # False positive rate with small numbers is high, therefore let's test with bigger sets
+        bloom_one = BloomFilter(100000, fpr)
+        bloom_two = BloomFilter(100000, fpr)
+        listA = [str(random.getrandbits(8)) for i in range(10000)]
+        listB = [str(random.getrandbits(8)) for i in range(10000)]
+
+        for char in listA:
+            bloom_one.add(char)
+        for char in listB:
+            bloom_two.add(char)
+
+        merged_bloom = bloom_one.union(bloom_two)
+
+        bloom_one_count = bloom_one.count
+        bloom_two_count = bloom_two.count
+
+        listA_uniq_count = len(set(listA))
+        listB_uniq_count = len(set(listB))
+
+        merged_bloom_count = merged_bloom.count
+        listAB_uniq_count = len(set(listA).union(set(listB)))
+
+        assert bloom_one_count == listA_uniq_count
+        assert bloom_two_count == listB_uniq_count
+        assert (listAB_uniq_count * (1 - fpr) <= merged_bloom_count <= listAB_uniq_count * (1 + fpr))
+
+
+
     def test_intersection(self):
         bloom_one = BloomFilter(100, 0.001)
         bloom_two = BloomFilter(100, 0.001)
