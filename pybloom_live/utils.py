@@ -1,4 +1,6 @@
 import sys
+import itertools
+
 try:
     import StringIO
     import cStringIO
@@ -8,11 +10,11 @@ except ImportError:
 running_python_3 = sys.version_info[0] == 3
 
 
-def range_fn(*args):
+def range_fn(start=0, stop=None):
     if running_python_3:
-        return range(*args)
+        return range(start, stop)
     else:
-        return xrange(*args)
+        return iter(itertools.count(start).next, stop)
 
 
 def is_string_io(instance):

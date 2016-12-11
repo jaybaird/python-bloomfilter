@@ -1,3 +1,9 @@
+Changes in 2.2
+==============
+Replaced the xrange by count, so it is a iterator now.
+This fixes overflow error when a large integer is passed
+the range_fun.
+
 Changes in 2.1
 ==============
 The tightening ratio is 0.9, and it is consistently used.

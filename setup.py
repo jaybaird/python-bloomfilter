@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-VERSION = '2.1.0'
+VERSION = '2.2.0'
 DESCRIPTION = "Bloom filter: A Probabilistic data structure"
 LONG_DESCRIPTION = """
 This bloom filter is forked from pybloom, and its tightening ratio is changed to 0.9, and this ration is consistently used. Choosing r around 0.8 - 0.9 will result in better average space usage for wide range of growth, therefore the default value of model is set to LARGE_SET_GROWTH.
