@@ -82,7 +82,7 @@ class TestUnionIntersection(unittest.TestCase):
 
 class Serialization(unittest.TestCase):
     SIZE = 12345
-    EXPECTED = set([random.randint(0, 10000100) for _ in range_fn(SIZE)])
+    EXPECTED = set([random.randint(0, 10000100) for _ in range_fn(0, SIZE)])
 
     def test_serialization(self):
         for klass, args in [(BloomFilter, (self.SIZE,)),
