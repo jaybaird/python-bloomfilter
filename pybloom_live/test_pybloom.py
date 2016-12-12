@@ -44,28 +44,28 @@ class TestUnionIntersection(unittest.TestCase):
         bloom_one = BloomFilter(1000, 0.001)
         bloom_two = BloomFilter(100, 0.001)
         def _run():
-            new_bloom = bloom_one.intersection(bloom_two)
+            bloom_one.intersection(bloom_two)
         self.assertRaises(ValueError, _run)
 
     def test_union_capacity_fail(self):
         bloom_one = BloomFilter(1000, 0.001)
         bloom_two = BloomFilter(100, 0.001)
         def _run():
-            new_bloom = bloom_one.union(bloom_two)
+            bloom_one.union(bloom_two)
         self.assertRaises(ValueError, _run)
 
     def test_intersection_k_fail(self):
         bloom_one = BloomFilter(100, 0.001)
         bloom_two = BloomFilter(100, 0.01)
         def _run():
-            new_bloom = bloom_one.intersection(bloom_two)
+            bloom_one.intersection(bloom_two)
         self.assertRaises(ValueError, _run)
 
     def test_union_k_fail(self):
         bloom_one = BloomFilter(100, 0.01)
         bloom_two = BloomFilter(100, 0.001)
         def _run():
-            new_bloom = bloom_one.union(bloom_two)
+            bloom_one.union(bloom_two)
         self.assertRaises(ValueError, _run)
 
 

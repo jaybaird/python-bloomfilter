@@ -160,9 +160,9 @@ class BloomFilter(object):
         """ Calculates the union of the two underlying bitarrays and returns
         a new bloom filter object."""
         if self.capacity != other.capacity or \
-            self.error_rate != other.error_rate:
-            raise ValueError("Unioning filters requires both filters to have \
-both the same capacity and error rate")
+                        self.error_rate != other.error_rate:
+            raise ValueError(
+                "Unioning filters requires both filters to have both the same capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray | other.bitarray
         return new_bloom
@@ -174,9 +174,9 @@ both the same capacity and error rate")
         """ Calculates the intersection of the two underlying bitarrays and returns
         a new bloom filter object."""
         if self.capacity != other.capacity or \
-            self.error_rate != other.error_rate:
-            raise ValueError("Intersecting filters requires both filters to \
-have equal capacity and error rate")
+                        self.error_rate != other.error_rate:
+            raise ValueError(
+                "Intersecting filters requires both filters to have equal capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray & other.bitarray
         return new_bloom
@@ -206,14 +206,13 @@ have equal capacity and error rate")
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
         filter.bitarray = bitarray.bitarray(endian='little')
         if n > 0:
-            (filter.bitarray.frombytes(f.read(n-headerlen)) if is_string_io(f)
+            (filter.bitarray.frombytes(f.read(n - headerlen)) if is_string_io(f)
              else filter.bitarray.fromfile(f, n - headerlen))
         else:
             (filter.bitarray.frombytes(f.read()) if is_string_io(f)
              else filter.bitarray.fromfile(f))
         if filter.num_bits != filter.bitarray.length() and \
-               (filter.num_bits + (8 - filter.num_bits % 8)
-                != filter.bitarray.length()):
+                (filter.num_bits + (8 - filter.num_bits % 8) != filter.bitarray.length()):
             raise ValueError('Bit length mismatch!')
 
         return filter
@@ -229,8 +228,8 @@ have equal capacity and error rate")
 
 
 class ScalableBloomFilter(object):
-    SMALL_SET_GROWTH = 2 # slower, but takes up less memory
-    LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
+    SMALL_SET_GROWTH = 2  # slower, but takes up less memory
+    LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
     FILE_FMT = '<idQd'
 
     def __init__(self, initial_capacity=100, error_rate=0.001,
@@ -314,7 +313,7 @@ class ScalableBloomFilter(object):
             # Then each filter directly, with a header describing
             # their lengths.
             headerpos = f.tell()
-            headerfmt = b'<' + b'Q'*(len(self.filters))
+            headerfmt = b'<' + b'Q' * (len(self.filters))
             f.write(b'.' * calcsize(headerfmt))
             filter_sizes = []
             for filter in self.filters:
@@ -332,7 +331,7 @@ class ScalableBloomFilter(object):
         filter._setup(*unpack(cls.FILE_FMT, f.read(calcsize(cls.FILE_FMT))))
         nfilters, = unpack(b'<l', f.read(calcsize(b'<l')))
         if nfilters > 0:
-            header_fmt = b'<' + b'Q'*nfilters
+            header_fmt = b'<' + b'Q' * nfilters
             bytes = f.read(calcsize(header_fmt))
             filter_lengths = unpack(header_fmt, bytes)
             for fl in filter_lengths:
@@ -349,4 +348,5 @@ class ScalableBloomFilter(object):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
