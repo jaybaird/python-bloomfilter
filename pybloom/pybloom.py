@@ -224,9 +224,8 @@ both the same capacity and error rate")
         new_bloom.bitarray = new_bloom.bitarray | other.bitarray
         # Set the new count
         # https://en.wikipedia.org/wiki/Bloom_filter#The_union_and_intersection_of_sets
-        #new_bloom.count = int(round(-(float(self.num_bits) / float(self.num_slices)) * math.log(1 - (float(new_bloom.bitarray.count(1)) / float(self.num_bits))), 0))
-        new_bloom.count = int(round(-float(self.bits_per_slice) * math.log(
-            1 - (float(new_bloom.bitarray.count(1)) / float(self.num_bits))), 0))
+        new_bloom.count = -float(self.bits_per_slice) * math.log(
+            1 - (float(new_bloom.bitarray.count(1)) / float(self.num_bits)))
         return new_bloom
 
     def __or__(self, other):
@@ -241,6 +240,12 @@ both the same capacity and error rate")
 have equal capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray & other.bitarray
+        # Set the new count
+        # https://en.wikipedia.org/wiki/Bloom_filter#The_union_and_intersection_of_sets
+        # The FPR in the resulting Bloom filter may be larger than the false positive probability in the Bloom filter created from scratch using the intersection of the two set
+        # Intersection guarantees to have all elements of the intersection but the false positive rate might be slightly higher than that of the pure intersection:
+        new_bloom.count = self.count + other.count + float(self.bits_per_slice) * math.log(
+            1 - (float((self.copy() | other).bitarray.count(1)) / float(self.num_bits)))
         return new_bloom
 
     def __and__(self, other):
