@@ -57,23 +57,22 @@ Development
 We follow this `git branching model <http://nvie.com/posts/a-successful-git-branching-model/>`_, please have a look at it.
 
 
-*******
-Install Instructions (from pip's database)
-*******
-pip install pybloom-live
+*************************
+Installation instructions
+*************************
+If you are installing from an internet-connected computer (or virtual install), you can use the pip python package manager to download and install this package. Simply type ``pip install pybloom-live``.
 
-*******
-Install Instructions (Windows build-from-GitHub source)
-*******
-  1) Download the zip file by clicking on the green "Clone or Download" link followed by "Download zip"
-  2) Extract all the contents of the the zip folder
-  3) Open command prompt (cmd.exe) to the extracted folder.
-    a) Find the extracted folder in Windows Explorer.
-    b) From the parent-level Shift+RightClick on the folder.
-    c) Select "open command window here".
-  4) type `pip install .`
+If using Windows and you are installing onto an airgapped computer or want the most up-to-date version from this repository, you can do the following:
 
-******
-Install verification
-******
-type `pip show pybloom-live` from a command prompt. Version should be 2.2.0 as of 2016-12-11.
+ 1. Download the zip file by clicking on the green "Clone or Download" link followed by "Download Zip."
+ 2. Extract all the contents of the the zip folder.
+ 3. Open command prompt (``cmd.exe``) to the extracted folder.
+   * Find the extracted folder in Windows Explorer.
+   * From the parent folder level Shift+RightClick on the folder.
+   * Select "Open command window here".
+ 4. Type ``pip install .``.
+
+
+Installation verification
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Type ``pip show pybloom-live`` from a command prompt. Version should be 2.2.0 as of 2016-12-11.
