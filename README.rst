@@ -55,3 +55,25 @@ functions.
 Development
 ***************
 We follow this `git branching model <http://nvie.com/posts/a-successful-git-branching-model/>`_, please have a look at it.
+
+
+*************************
+Installation instructions
+*************************
+If you are installing from an internet-connected computer (or virtual install), you can use the pip python package manager to download and install this package. Simply type ``pip install pybloom-live`` from a DOS command prompt (``cmd.exe``) or a linux shell (e.g. ``bash`` or ``dash`` on MacOS X as well as linux OSes including debian, slackware, redhat, enoch and arch).
+
+If using Windows and you are installing onto an airgapped computer or want the most up-to-date version from this repository, you can do the following:
+
+1. Download the zip file by clicking on the green "Clone or Download" link followed by "Download Zip."
+2. Extract all the contents of the the zip folder.
+3. Open command prompt (``cmd.exe``) to the extracted folder.
+  a. Find the extracted folder in Windows Explorer.
+  b. From the parent folder level Shift+RightClick on the folder.
+  c. Select "Open command window here".
+4. Type ``pip install .``.
+
+Similar steps are possible under linux and MacOS X.
+
+Installation verification
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Type ``pip show pybloom-live`` from a command prompt. Version should be 2.2.0 as of 2016-12-11.
