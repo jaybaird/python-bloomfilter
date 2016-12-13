@@ -64,13 +64,13 @@ If you are installing from an internet-connected computer (or virtual install), 
 
 If using Windows and you are installing onto an airgapped computer or want the most up-to-date version from this repository, you can do the following:
 
- 1. Download the zip file by clicking on the green "Clone or Download" link followed by "Download Zip."
- 2. Extract all the contents of the the zip folder.
- 3. Open command prompt (``cmd.exe``) to the extracted folder.
-   * Find the extracted folder in Windows Explorer.
-   * From the parent folder level Shift+RightClick on the folder.
-   * Select "Open command window here".
- 4. Type ``pip install .``.
+1. Download the zip file by clicking on the green "Clone or Download" link followed by "Download Zip."
+2. Extract all the contents of the the zip folder.
+3. Open command prompt (``cmd.exe``) to the extracted folder.
+  a. Find the extracted folder in Windows Explorer.
+  b. From the parent folder level Shift+RightClick on the folder.
+  c. Select "Open command window here".
+4. Type ``pip install .``.
 
 
 Installation verification
