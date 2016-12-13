@@ -60,7 +60,7 @@ We follow this `git branching model <http://nvie.com/posts/a-successful-git-bran
 *************************
 Installation instructions
 *************************
-If you are installing from an internet-connected computer (or virtual install), you can use the pip python package manager to download and install this package. Simply type ``pip install pybloom-live`` from a DOS command prompt (``cmd.exe``) or a linux shell (e.g. ``bash`` or ``dash`` on MacOS X as well as linux OSes including debian, slackware, redhat, enoch and arch.
+If you are installing from an internet-connected computer (or virtual install), you can use the pip python package manager to download and install this package. Simply type ``pip install pybloom-live`` from a DOS command prompt (``cmd.exe``) or a linux shell (e.g. ``bash`` or ``dash`` on MacOS X as well as linux OSes including debian, slackware, redhat, enoch and arch).
 
 If using Windows and you are installing onto an airgapped computer or want the most up-to-date version from this repository, you can do the following:
 
