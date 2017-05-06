@@ -18,8 +18,8 @@ def main(capacity=100000, request_error_rate=0.1):
             end - start, f.capacity / (end - start)))
     oneBits = f.bitarray.count(True)
     zeroBits = f.bitarray.count(False)
-    #print "Number of 1 bits:", oneBits
-    #print "Number of 0 bits:", zeroBits
+    print "Number of 1 bits:", oneBits
+    print "Number of 0 bits:", zeroBits
     print("Number of Filter Bits:", f.num_bits)
     print("Number of slices:", f.num_slices)
     print("Bits per slice:", f.bits_per_slice)
@@ -45,6 +45,5 @@ def main(capacity=100000, request_error_rate=0.1):
     fp_theory = math.pow((1 - math.exp(-k * (n + 0.5) / (m - 1))), k)
     print("Projected FP rate (Goel/Gupta): {:2.6f}".format(fp_theory))
 
-if __name__ == '__main__' :
-    status = main()
-    sys.exit(status)
+if __name__ == '__main__':
+    main()
