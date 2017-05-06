@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/joseph-fox/python-bloomfilter.svg?branch=master)](https://travis-ci.org/joseph-fox/python-bloomfilter)
 
-#Python Bloom Filter
+# Python Bloom Filter
 
 
 This Bloom Filter has its tightening ratio updated to 0.9, and this ration 
@@ -51,12 +51,12 @@ functions.
     # below the default 0.1% error threshold. As the capacity goes up, the
     # error will approach 0.1%.
 ```
-#Development
+# Development
 We follow this [git branching model](http://nvie.com/posts/a-successful-git-branching-model/), 
 please have a look at it.
 
 
-#Installation instructions
+# Installation instructions
 If you are installing from an internet-connected computer (or virtual 
 install), you can use the pip python package manager to download and install 
 this package. Simply type `pip install pybloom-live` from a DOS command 
@@ -80,6 +80,6 @@ link followed by "Download Zip."
 
 Similar steps are possible under linux and MacOS X.
 
-#Installation verification
+# Installation verification
 Type `pip show pybloom-live` from a command prompt. Version should be 
 2.2.0 as of 2016-12-11.
