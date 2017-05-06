@@ -4,7 +4,7 @@
 
 
 This Bloom Filter has its tightening ratio updated to 0.9, and this ration 
-is consistently used throughout the `pybloom` module..
+is consistently used throughout the `pybloom` module.
 Choosing r around 0.8 - 0.9 will result in better average space usage for wide
 range of growth, therefore the default value of model is set to 
 LARGE_SET_GROWTH. This is a module that includes a Bloom Filter data structure 
