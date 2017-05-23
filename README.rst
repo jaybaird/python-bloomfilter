@@ -1,10 +1,10 @@
-pybloom
+pybloom2
 =======
 
 .. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
     :target: https://travis-ci.org/jaybaird/python-bloomfilter
 
-``pybloom`` is a module that includes a Bloom Filter data structure along with
+``pybloom2`` is a module that includes a Bloom Filter data structure along with
 an implmentation of Scalable Bloom Filters as discussed in:
 
 P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters,
@@ -22,7 +22,7 @@ functions.
 
 .. code-block:: python
 
-    >>> from pybloom import BloomFilter
+    >>> from pybloom2 import BloomFilter
     >>> f = BloomFilter(capacity=1000, error_rate=0.001)
     >>> [f.add(x) for x in range(10)]
     [False, False, False, False, False, False, False, False, False, False]
@@ -38,7 +38,7 @@ functions.
     >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
     True
 
-    >>> from pybloom import ScalableBloomFilter
+    >>> from pybloom2 import ScalableBloomFilter
     >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
     >>> count = 10000
     >>> for i in xrange(0, count):

@@ -2,9 +2,9 @@
 from setuptools import setup
 
 VERSION = '2.0.0'
-DESCRIPTION = "PyBloom: A Probabilistic data structure"
+DESCRIPTION = "PyBloom2: A Probabilistic data structure"
 LONG_DESCRIPTION = """
-pybloom is a Python implementation of the bloom filter probabilistic data
+pybloom2 is a Python implementation of the bloom filter probabilistic data
 structure. The module also provides a Scalable Bloom Filter that allows a
 bloom filter to grow without knowing the original set size.
 """
@@ -22,7 +22,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 """.splitlines()))
 
 setup(
-    name="pybloom",
+    name="pybloom2",
     version=VERSION,
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
@@ -34,8 +34,8 @@ setup(
     url="http://github.com/jaybaird/python-bloomfilter/",
     license="MIT License",
     platforms=['any'],
-    test_suite="pybloom.tests",
+    test_suite="pybloom2.tests",
     zip_safe=True,
     install_requires=['bitarray>=0.3.4'],
-    packages=['pybloom']
+    packages=['pybloom2']
 )

@@ -8,4 +8,4 @@ install:
   - pip install -r requirements.txt
   - pip install pytest
 script:
-  - py.test pybloom
+  - py.test pybloom2

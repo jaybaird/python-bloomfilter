@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from pybloom.pybloom import BloomFilter, ScalableBloomFilter
-from pybloom.utils import running_python_3, range_fn
+from pybloom2.pybloom import BloomFilter, ScalableBloomFilter
+from pybloom2.utils import running_python_3, range_fn
 
 try:
     from StringIO import StringIO
@@ -17,7 +17,7 @@ from unittest import TestSuite
 def additional_tests():
     proj_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     readme_fn = os.path.join(proj_dir, 'README.txt')
-    suite = TestSuite([doctest.DocTestSuite('pybloom.pybloom')])
+    suite = TestSuite([doctest.DocTestSuite('pybloom2.pybloom')])
     if os.path.exists(readme_fn):
         suite.addTest(doctest.DocFileSuite(readme_fn, module_relative=False))
     return suite
