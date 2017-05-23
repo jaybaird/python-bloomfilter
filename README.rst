@@ -1,24 +1,11 @@
 pybloom2
 =======
 
-.. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
-    :target: https://travis-ci.org/jaybaird/python-bloomfilter
 
-``pybloom2`` is a module that includes a Bloom Filter data structure along with
-an implmentation of Scalable Bloom Filters as discussed in:
+``pybloom2`` is a fork of https://github.com/jaybaird/python-bloomfilter.
+It includes a Bloom Filter data structure along with
+an implementation of Scalable Bloom Filter[1].
 
-P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters,
-(GLOBECOM 2007), IEEE, 2007.
-
-Bloom filters are great if you understand what amount of bits you need to set
-aside early to store your entire set. Scalable Bloom Filters allow your bloom
-filter bits to grow as a function of false positive probability and size.
-
-A filter is "full" when at capacity: M * ((ln 2 ^ 2) / abs(ln p)), where M
-is the number of bits and p is the false positive probability. When capacity
-is reached a new filter is then created exponentially larger than the last
-with a tighter probability of false positives and a larger number of hash
-functions.
 
 .. code-block:: python
 
@@ -50,3 +37,9 @@ functions.
     # len(sbf) may not equal the entire input length. 0.01% error is well
     # below the default 0.1% error threshold. As the capacity goes up, the
     # error will approach 0.1%.
+
+
+..
+references
+==========
+[1] P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters, (GLOBECOM 2007), IEEE, 2007. http://www.sciencedirect.com/science/article/pii/S0020019006003127
