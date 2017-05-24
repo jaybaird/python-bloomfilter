@@ -5,7 +5,7 @@ without increasing the false positive error_rate.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 
-    >>> from pybloom import BloomFilter
+    >>> from pybloom2 import BloomFilter
     >>> f = BloomFilter(capacity=10000, error_rate=0.001)
     >>> for i in range_fn(0, f.capacity):
     ...     _ = f.add(i)
@@ -19,7 +19,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
     >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
     True
 
-    >>> from pybloom import ScalableBloomFilter
+    >>> from pybloom2 import ScalableBloomFilter
     >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
     >>> count = 10000
     >>> for i in range_fn(0, count):
@@ -36,13 +36,13 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 from __future__ import absolute_import
 import math
 import hashlib
-from pybloom.utils import range_fn, is_string_io, running_python_3
+from pybloom2.utils import range_fn, is_string_io, running_python_3
 from struct import unpack, pack, calcsize
 
 try:
     import bitarray
 except ImportError:
-    raise ImportError('pybloom requires bitarray >= 0.3.4')
+    raise ImportError('pybloom2 requires bitarray >= 0.3.4')
 
 __version__ = '2.0'
 __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\

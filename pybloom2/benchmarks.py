@@ -2,9 +2,9 @@
 #
 """Test performance of BloomFilter at a set capacity and error rate."""
 import sys
-from pybloom import BloomFilter
+from pybloom2 import BloomFilter
 import bitarray, math, time
-from utils import range_fn
+from pybloom2.utils import range_fn
 
 
 def main(capacity=100000, request_error_rate=0.1):
