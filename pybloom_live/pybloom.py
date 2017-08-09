@@ -291,6 +291,43 @@ class ScalableBloomFilter(object):
         filter.add(key, skip_check=True)
         return False
 
+    def copy(self):
+        """Return a copy of this scalable bloom filter.
+        """
+        new_filter = ScalableBloomFilter(initial_capacity=self.initial_capacity,
+                                         error_rate=self.error_rate,
+                                         mode=self.SMALL_SET_GROWTH)
+        new_filter.filters = self.filters[:]
+        return new_filter
+
+    def union(self, other):
+        """ Calculates the union of the underlying classic bloom filters and returns
+        a new scalable bloom filter object."""
+
+        if self.scale != other.scale or \
+                self.initial_capacity != other.initial_capacity or \
+                self.error_rate != other.error_rate:
+            raise ValueError("Unioning two scalable bloom filters requires \
+            both filters to have both the same mode, initial capacity and error rate")
+        if len(self.filters) > len(other.filters):
+            larger_sbf = self.copy()
+            smaller_sbf = other.copy()
+        else:
+            larger_sbf = other.copy()
+            smaller_sbf = self.copy()
+        # Union the underlying classic bloom filters
+        new_filters = []
+        for i in range(len(smaller_sbf.filters)):
+            new_filter = larger_sbf.filters[i] | smaller_sbf.filters[i]
+            new_filters.append(new_filter)
+        for i in range(len(smaller_sbf.filters), len(larger_sbf.filters)):
+            new_filters.append(larger_sbf.filters[i])
+        larger_sbf.filters = new_filters
+        return larger_sbf
+
+    def __or__(self, other):
+        return self.union(other)
+
     @property
     def capacity(self):
         """Returns the total capacity for all filters in this SBF"""
