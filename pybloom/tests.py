@@ -77,6 +77,18 @@ class TestUnionIntersection(unittest.TestCase):
             new_bloom = bloom_one.union(bloom_two)
         self.assertRaises(ValueError, _run)
 
+    def test_union_scalable_bloom_filter(self):
+        bloom_one = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+        bloom_two = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
+        chars = [chr(i) for i in range_fn(97, 123)]
+        for char in chars[int(len(chars) / 2):]:
+            bloom_one.add(char)
+        for char in chars[:int(len(chars) / 2)]:
+            bloom_two.add(char)
+        new_bloom = bloom_one.union(bloom_two)
+        for char in chars:
+            self.assertTrue(char in new_bloom)
+
 class Serialization(unittest.TestCase):
     SIZE = 12345
     EXPECTED = set([random.randint(0, 10000100) for _ in range_fn(SIZE)])
