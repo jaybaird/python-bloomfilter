@@ -71,14 +71,15 @@ class TestUnionIntersection(unittest.TestCase):
     def test_union_scalable_bloom_filter(self):
         bloom_one = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         bloom_two = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        chars = [chr(i) for i in range_fn(97, 123)]
-        for char in chars[int(len(chars) / 2):]:
-            bloom_one.add(char)
-        for char in chars[:int(len(chars) / 2)]:
-            bloom_two.add(char)
+        numbers = [i for i in range_fn(1, 10000)]
+        middle = int(len(numbers) / 2)
+        for number in numbers[middle:]:
+            bloom_one.add(number)
+        for number in numbers[:middle]:
+            bloom_two.add(number)
         new_bloom = bloom_one.union(bloom_two)
-        for char in chars:
-            self.assertTrue(char in new_bloom)
+        for number in numbers:
+            self.assertTrue(number in new_bloom)
 
 class Serialization(unittest.TestCase):
     SIZE = 12345

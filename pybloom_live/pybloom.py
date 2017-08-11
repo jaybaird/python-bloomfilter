@@ -7,6 +7,7 @@ Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
 from __future__ import absolute_import
 import math
 import hashlib
+import copy
 from pybloom_live.utils import range_fn, is_string_io, running_python_3
 from struct import unpack, pack, calcsize
 
@@ -291,15 +292,6 @@ class ScalableBloomFilter(object):
         filter.add(key, skip_check=True)
         return False
 
-    def copy(self):
-        """Return a copy of this scalable bloom filter.
-        """
-        new_filter = ScalableBloomFilter(initial_capacity=self.initial_capacity,
-                                         error_rate=self.error_rate,
-                                         mode=self.SMALL_SET_GROWTH)
-        new_filter.filters = self.filters[:]
-        return new_filter
-
     def union(self, other):
         """ Calculates the union of the underlying classic bloom filters and returns
         a new scalable bloom filter object."""
@@ -310,11 +302,11 @@ class ScalableBloomFilter(object):
             raise ValueError("Unioning two scalable bloom filters requires \
             both filters to have both the same mode, initial capacity and error rate")
         if len(self.filters) > len(other.filters):
-            larger_sbf = self.copy()
-            smaller_sbf = other.copy()
+            larger_sbf = copy.deepcopy(self)
+            smaller_sbf = other
         else:
-            larger_sbf = other.copy()
-            smaller_sbf = self.copy()
+            larger_sbf = copy.deepcopy(other)
+            smaller_sbf = self
         # Union the underlying classic bloom filters
         new_filters = []
         for i in range(len(smaller_sbf.filters)):
