@@ -1,3 +1,7 @@
+Changes in 2.3.1
+==============
+Added union functionality to ScalableBloomFilter.
+
 Changes in 2.2
 ==============
 Replaced the xrange by count, so it is a iterator now.
