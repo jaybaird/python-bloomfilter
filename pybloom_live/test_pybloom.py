@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-from pybloom_live.pybloom import BloomFilter, ScalableBloomFilter
+from pybloom_live.pybloom import (BloomFilter, ScalableBloomFilter,
+                                  make_hashfuncs)
 from pybloom_live.utils import running_python_3, range_fn
 
 try:
@@ -11,6 +12,20 @@ except ImportError:
 import unittest
 import random
 import tempfile
+
+
+class TestMakeHashFuncs(unittest.TestCase):
+    def test_make_hashfuncs_returns_hashfn(self):
+        make_hashes, hashfn = make_hashfuncs(100, 20)
+        self.assertEquals('openssl_sha512', hashfn.__name__)
+        make_hashes, hashfn = make_hashfuncs(20, 3)
+        self.assertEquals('openssl_sha384', hashfn.__name__)
+        make_hashes, hashfn = make_hashfuncs(15, 2)
+        self.assertEquals('openssl_sha256', hashfn.__name__)
+        make_hashes, hashfn = make_hashfuncs(10, 2)
+        self.assertEquals('openssl_sha1', hashfn.__name__)
+        make_hashes, hashfn = make_hashfuncs(5, 1)
+        self.assertEquals('openssl_md5', hashfn.__name__)
 
 
 class TestUnionIntersection(unittest.TestCase):

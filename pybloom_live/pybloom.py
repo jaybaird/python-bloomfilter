@@ -35,13 +35,14 @@ def make_hashfuncs(num_slices, num_bits):
         hashfn = hashlib.sha1
     else:
         hashfn = hashlib.md5
+
     fmt = fmt_code * (hashfn().digest_size // chunk_size)
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
     salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(0, num_salts))
 
-    def _make_hashfuncs(key):
+    def _hash_maker(key):
         if running_python_3:
             if isinstance(key, str):
                 key = key.encode('utf-8')
@@ -62,7 +63,7 @@ def make_hashfuncs(num_slices, num_bits):
                 if i >= num_slices:
                     return
 
-    return _make_hashfuncs
+    return _hash_maker, hashfn
 
 
 class BloomFilter(object):
@@ -105,7 +106,7 @@ class BloomFilter(object):
         self.capacity = capacity
         self.num_bits = num_slices * bits_per_slice
         self.count = count
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
@@ -225,7 +226,7 @@ class BloomFilter(object):
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
 
 class ScalableBloomFilter(object):
