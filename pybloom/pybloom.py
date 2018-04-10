@@ -52,6 +52,24 @@ __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
               "
 
 def make_hashfuncs(num_slices, num_bits):
+    """
+    >>> from pybloom.pybloom import make_hashfuncs
+    >>> make_hashes, hashfn = make_hashfuncs(100, 20)
+    >>> hashfn
+    <built-in function openssl_sha512>
+    >>> make_hashes, hashfn = make_hashfuncs(20, 3)
+    >>> hashfn
+    <built-in function openssl_sha384>
+    >>> make_hashes, hashfn =  make_hashfuncs(15, 2)
+    >>> hashfn
+    <built-in function openssl_sha256>
+    >>> make_hashes, hashfn = make_hashfuncs(10, 2)
+    >>> hashfn
+    <built-in function openssl_sha1>
+    >>> make_hashes, hashfn = make_hashfuncs(5, 1)
+    >>> hashfn
+    <built-in function openssl_md5>
+    """
     if num_bits >= (1 << 31):
         fmt_code, chunk_size = 'Q', 8
     elif num_bits >= (1 << 15):
@@ -75,7 +93,7 @@ def make_hashfuncs(num_slices, num_bits):
     if extra:
         num_salts += 1
     salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
-    def _make_hashfuncs(key):
+    def _hash_maker(key):
         if running_python_3:
             if isinstance(key, str):
                 key = key.encode('utf-8')
@@ -96,7 +114,7 @@ def make_hashfuncs(num_slices, num_bits):
                 if i >= num_slices:
                     return
 
-    return _make_hashfuncs, hashfn
+    return _hash_maker, hashfn
 
 
 class BloomFilter(object):
