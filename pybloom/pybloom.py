@@ -52,6 +52,24 @@ __author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
               "
 
 def make_hashfuncs(num_slices, num_bits):
+    """
+    >>> from pybloom.pybloom import make_hashfuncs
+    >>> make_hashes, hashfn = make_hashfuncs(100, 20)
+    >>> hashfn
+    <built-in function openssl_sha512>
+    >>> make_hashes, hashfn = make_hashfuncs(20, 3)
+    >>> hashfn
+    <built-in function openssl_sha384>
+    >>> make_hashes, hashfn =  make_hashfuncs(15, 2)
+    >>> hashfn
+    <built-in function openssl_sha256>
+    >>> make_hashes, hashfn = make_hashfuncs(10, 2)
+    >>> hashfn
+    <built-in function openssl_sha1>
+    >>> make_hashes, hashfn = make_hashfuncs(5, 1)
+    >>> hashfn
+    <built-in function openssl_md5>
+    """
     if num_bits >= (1 << 31):
         fmt_code, chunk_size = 'Q', 8
     elif num_bits >= (1 << 15):
@@ -69,12 +87,13 @@ def make_hashfuncs(num_slices, num_bits):
         hashfn = hashlib.sha1
     else:
         hashfn = hashlib.md5
+
     fmt = fmt_code * (hashfn().digest_size // chunk_size)
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
     salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
-    def _make_hashfuncs(key):
+    def _hash_maker(key):
         if running_python_3:
             if isinstance(key, str):
                 key = key.encode('utf-8')
@@ -95,7 +114,7 @@ def make_hashfuncs(num_slices, num_bits):
                 if i >= num_slices:
                     return
 
-    return _make_hashfuncs
+    return _hash_maker, hashfn
 
 
 class BloomFilter(object):
@@ -145,7 +164,7 @@ class BloomFilter(object):
         self.capacity = capacity
         self.num_bits = num_slices * bits_per_slice
         self.count = count
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
@@ -282,7 +301,7 @@ have equal capacity and error rate")
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
 class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
