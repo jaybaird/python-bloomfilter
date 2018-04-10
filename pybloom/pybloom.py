@@ -69,7 +69,6 @@ def make_hashfuncs(num_slices, num_bits):
         hashfn = hashlib.sha1
     else:
         hashfn = hashlib.md5
-    hashfn_name = hashfn.__name__
 
     fmt = fmt_code * (hashfn().digest_size // chunk_size)
     num_salts, extra = divmod(num_slices, len(fmt))
@@ -97,7 +96,7 @@ def make_hashfuncs(num_slices, num_bits):
                 if i >= num_slices:
                     return
 
-    return _make_hashfuncs, hashfn_name
+    return _make_hashfuncs, hashfn
 
 
 class BloomFilter(object):
@@ -147,7 +146,7 @@ class BloomFilter(object):
         self.capacity = capacity
         self.num_bits = num_slices * bits_per_slice
         self.count = count
-        self.make_hashes, self.hashfn_name = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
@@ -284,7 +283,7 @@ have equal capacity and error rate")
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.make_hashes, self.hashfn_name = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
 class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
