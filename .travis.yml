@@ -6,6 +6,6 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install pytest
+  - pip install --upgrade pytest
 script:
   - py.test pybloom_live
