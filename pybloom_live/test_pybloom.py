@@ -9,6 +9,8 @@ try:
 except ImportError:
     from io import BytesIO as StringIO
 
+from io import BytesIO
+
 import unittest
 import random
 import tempfile
@@ -126,6 +128,20 @@ class Serialization(unittest.TestCase):
                     self.assertTrue(item in filter)
                 del(filter)
                 stream.close()
+
+    def test_bytes_io(self):
+        filter = BloomFilter(self.SIZE)
+        for item in self.EXPECTED:
+            filter.add(item)
+
+        stream = BytesIO()
+        filter.tofile(stream)
+        del filter
+        stream.seek(0)
+        filter = BloomFilter.fromfile(stream)
+        for item in self.EXPECTED:
+            assert item in filter
+
 
 if __name__ == '__main__':
     unittest.main()
