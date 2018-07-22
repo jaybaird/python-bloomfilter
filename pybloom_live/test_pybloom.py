@@ -4,14 +4,18 @@ from pybloom_live.pybloom import (BloomFilter, ScalableBloomFilter,
 from pybloom_live.utils import running_python_3, range_fn
 
 try:
-    from StringIO import StringIO
+    import StringIO
     import cStringIO
 except ImportError:
-    from io import BytesIO as StringIO
+    pass
+
+import io
 
 import unittest
 import random
 import tempfile
+
+import pytest
 
 
 class TestMakeHashFuncs(unittest.TestCase):
@@ -96,36 +100,39 @@ class TestUnionIntersection(unittest.TestCase):
         for number in numbers:
             self.assertTrue(number in new_bloom)
 
-class Serialization(unittest.TestCase):
+
+class TestSerialization:
     SIZE = 12345
     EXPECTED = set([random.randint(0, 10000100) for _ in range_fn(0, SIZE)])
 
-    def test_serialization(self):
-        for klass, args in [(BloomFilter, (self.SIZE,)),
-                            (ScalableBloomFilter, ())]:
-            filter = klass(*args)
-            for item in self.EXPECTED:
-                filter.add(item)
+    @pytest.mark.parametrize("cls,args", [
+        (BloomFilter, (SIZE,)),
+        (ScalableBloomFilter, ()),
+    ])
+    @pytest.mark.parametrize("stream_factory", [
+        lambda: tempfile.TemporaryFile,
+        lambda: io.BytesIO,
+        pytest.param(
+            lambda: cStringIO.StringIO,
+            marks=pytest.mark.skipif(running_python_3, reason="Python 2 only")),
+        pytest.param(
+            lambda: StringIO.StringIO,
+            marks=pytest.mark.skipif(running_python_3, reason="Python 2 only")),
+    ])
+    def test_serialization(self, cls, args, stream_factory):
+        filter = cls(*args)
+        for item in self.EXPECTED:
+            filter.add(item)
 
-            f = tempfile.TemporaryFile()
-            filter.tofile(f)
-            stringio = StringIO()
-            filter.tofile(stringio)
-            streams_to_test = [f, stringio]
-            if not running_python_3:
-                cstringio = cStringIO.StringIO()
-                filter.tofile(cstringio)
-                streams_to_test.append(cstringio)
+        f = stream_factory()()
+        filter.tofile(f)
+        del filter
 
-            del filter
+        f.seek(0)
+        filter = cls.fromfile(f)
+        for item in self.EXPECTED:
+            assert item in filter
 
-            for stream in streams_to_test:
-                stream.seek(0)
-                filter = klass.fromfile(stream)
-                for item in self.EXPECTED:
-                    self.assertTrue(item in filter)
-                del(filter)
-                stream.close()
 
 if __name__ == '__main__':
     unittest.main()

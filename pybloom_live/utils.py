@@ -5,7 +5,9 @@ try:
     import StringIO
     import cStringIO
 except ImportError:
-    from io import BytesIO
+    pass
+
+from io import BytesIO
 
 running_python_3 = sys.version_info[0] == 3
 
@@ -18,9 +20,10 @@ def range_fn(start=0, stop=None):
 
 
 def is_string_io(instance):
-    if running_python_3:
-       return isinstance(instance, BytesIO)
-    else:
+    if isinstance(instance, BytesIO):
+        return True
+    if not running_python_3:
         return isinstance(instance, (StringIO.StringIO,
                                      cStringIO.InputType,
                                      cStringIO.OutputType))
+    return False
