@@ -1,11 +1,18 @@
 language: python
-python:
-  - "2.6"
-  - "2.7"
-  - "3.4"
+matrix:
+  include:
+    - python: 2.7
+      dist: xenial
+      sudo: false
+    - python: 3.4
+      dist: trusty
+      sudo: false
+    - python: 3.7
+      dist: xenial
+      sudo: true
 
 install:
   - pip install -r requirements.txt
-  - pip install pytest
+  - pip install --upgrade pytest==3.6.3
 script:
-  - py.test pybloom
+  - py.test pybloom_live

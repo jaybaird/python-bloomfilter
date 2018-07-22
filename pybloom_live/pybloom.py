@@ -1,55 +1,21 @@
-# -*- encoding: utf-8 -*-
 """This module implements a bloom filter probabilistic data structure and
 an a Scalable Bloom Filter that grows in size as your add more items to it
 without increasing the false positive error_rate.
 
 Requires the bitarray library: http://pypi.python.org/pypi/bitarray/
-
-    >>> from pybloom import BloomFilter
-    >>> f = BloomFilter(capacity=10000, error_rate=0.001)
-    >>> for i in range_fn(0, f.capacity):
-    ...     _ = f.add(i)
-    ...
-    >>> 0 in f
-    True
-    >>> f.capacity in f
-    False
-    >>> len(f) <= f.capacity
-    True
-    >>> (1.0 - (len(f) / float(f.capacity))) <= f.error_rate + 2e-18
-    True
-
-    >>> from pybloom import ScalableBloomFilter
-    >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-    >>> count = 10000
-    >>> for i in range_fn(0, count):
-    ...     _ = sbf.add(i)
-    ...
-    >>> sbf.capacity > count
-    True
-    >>> len(sbf) <= count
-    True
-    >>> (1.0 - (len(sbf) / float(count))) <= sbf.error_rate + 2e-18
-    True
-
 """
 from __future__ import absolute_import
 import math
 import hashlib
-from pybloom.utils import range_fn, is_string_io, running_python_3
+import copy
+from pybloom_live.utils import range_fn, is_string_io, running_python_3
 from struct import unpack, pack, calcsize
 
 try:
     import bitarray
 except ImportError:
-    raise ImportError('pybloom requires bitarray >= 0.3.4')
+    raise ImportError('pybloom_live requires bitarray >= 0.3.4')
 
-__version__ = '2.0'
-__author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
-               Marius Eriksen <marius@monkey.org>,\
-               Alex Brasetvik <alex@brasetvik.com>,\
-               Matt Bachmann <bachmann.matt@gmail.com>,\
-              "
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
@@ -69,12 +35,14 @@ def make_hashfuncs(num_slices, num_bits):
         hashfn = hashlib.sha1
     else:
         hashfn = hashlib.md5
+
     fmt = fmt_code * (hashfn().digest_size // chunk_size)
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
-    salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
-    def _make_hashfuncs(key):
+    salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(0, num_salts))
+
+    def _hash_maker(key):
         if running_python_3:
             if isinstance(key, str):
                 key = key.encode('utf-8')
@@ -95,7 +63,7 @@ def make_hashfuncs(num_slices, num_bits):
                 if i >= num_slices:
                     return
 
-    return _make_hashfuncs
+    return _hash_maker, hashfn
 
 
 class BloomFilter(object):
@@ -112,13 +80,6 @@ class BloomFilter(object):
             the error_rate of the filter returning false positives. This
             determines the filters capacity. Inserting more than capacity
             elements greatly increases the chance of false positives.
-
-        >>> b = BloomFilter(capacity=100000, error_rate=0.001)
-        >>> b.add("test")
-        False
-        >>> "test" in b
-        True
-
         """
         if not (0 < error_rate < 1):
             raise ValueError("Error_Rate must be between 0 and 1.")
@@ -145,17 +106,10 @@ class BloomFilter(object):
         self.capacity = capacity
         self.num_bits = num_slices * bits_per_slice
         self.count = count
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
-
-        >>> b = BloomFilter(capacity=100)
-        >>> b.add("hello")
-        False
-        >>> "hello" in b
-        True
-
         """
         bits_per_slice = self.bits_per_slice
         bitarray = self.bitarray
@@ -174,15 +128,6 @@ class BloomFilter(object):
     def add(self, key, skip_check=False):
         """ Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
-
-        >>> b = BloomFilter(capacity=100)
-        >>> b.add("hello")
-        False
-        >>> b.add("hello")
-        True
-        >>> b.count
-        1
-
         """
         bitarray = self.bitarray
         bits_per_slice = self.bits_per_slice
@@ -217,9 +162,9 @@ class BloomFilter(object):
         """ Calculates the union of the two underlying bitarrays and returns
         a new bloom filter object."""
         if self.capacity != other.capacity or \
-            self.error_rate != other.error_rate:
-            raise ValueError("Unioning filters requires both filters to have \
-both the same capacity and error rate")
+                        self.error_rate != other.error_rate:
+            raise ValueError(
+                "Unioning filters requires both filters to have both the same capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray | other.bitarray
         return new_bloom
@@ -231,9 +176,9 @@ both the same capacity and error rate")
         """ Calculates the intersection of the two underlying bitarrays and returns
         a new bloom filter object."""
         if self.capacity != other.capacity or \
-            self.error_rate != other.error_rate:
-            raise ValueError("Intersecting filters requires both filters to \
-have equal capacity and error rate")
+                        self.error_rate != other.error_rate:
+            raise ValueError(
+                "Intersecting filters requires both filters to have equal capacity and error rate")
         new_bloom = self.copy()
         new_bloom.bitarray = new_bloom.bitarray & other.bitarray
         return new_bloom
@@ -263,14 +208,13 @@ have equal capacity and error rate")
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
         filter.bitarray = bitarray.bitarray(endian='little')
         if n > 0:
-            (filter.bitarray.frombytes(f.read(n-headerlen)) if is_string_io(f)
+            (filter.bitarray.frombytes(f.read(n - headerlen)) if is_string_io(f)
              else filter.bitarray.fromfile(f, n - headerlen))
         else:
             (filter.bitarray.frombytes(f.read()) if is_string_io(f)
              else filter.bitarray.fromfile(f))
         if filter.num_bits != filter.bitarray.length() and \
-               (filter.num_bits + (8 - filter.num_bits % 8)
-                != filter.bitarray.length()):
+                (filter.num_bits + (8 - filter.num_bits % 8) != filter.bitarray.length()):
             raise ValueError('Bit length mismatch!')
 
         return filter
@@ -282,15 +226,16 @@ have equal capacity and error rate")
 
     def __setstate__(self, d):
         self.__dict__.update(d)
-        self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
+        self.make_hashes, self.hashfn = make_hashfuncs(self.num_slices, self.bits_per_slice)
+
 
 class ScalableBloomFilter(object):
-    SMALL_SET_GROWTH = 2 # slower, but takes up less memory
-    LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
+    SMALL_SET_GROWTH = 2  # slower, but takes up less memory
+    LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
     FILE_FMT = '<idQd'
 
     def __init__(self, initial_capacity=100, error_rate=0.001,
-                 mode=SMALL_SET_GROWTH):
+                 mode=LARGE_SET_GROWTH):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
         positive rate
@@ -306,18 +251,6 @@ class ScalableBloomFilter(object):
             ScalableBloomFilter.LARGE_SET_GROWTH. SMALL_SET_GROWTH is slower
             but uses less memory. LARGE_SET_GROWTH is faster but consumes
             memory faster.
-
-        >>> b = ScalableBloomFilter(initial_capacity=512, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("test")
-        False
-        >>> "test" in b
-        True
-        >>> unicode_string = u'¡'
-        >>> b.add(unicode_string)
-        False
-        >>> unicode_string in b
-        True
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
@@ -332,14 +265,6 @@ class ScalableBloomFilter(object):
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
-
-        >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("hello")
-        False
-        >>> "hello" in b
-        True
-
         """
         for f in reversed(self.filters):
             if key in f:
@@ -350,21 +275,13 @@ class ScalableBloomFilter(object):
         """Adds a key to this bloom filter.
         If the key already exists in this filter it will return True.
         Otherwise False.
-
-        >>> b = ScalableBloomFilter(initial_capacity=100, error_rate=0.001, \
-                                    mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> b.add("hello")
-        False
-        >>> b.add("hello")
-        True
-
         """
         if key in self:
             return True
         if not self.filters:
             filter = BloomFilter(
                 capacity=self.initial_capacity,
-                error_rate=self.error_rate * (1.0 - self.ratio))
+                error_rate=self.error_rate * self.ratio)
             self.filters.append(filter)
         else:
             filter = self.filters[-1]
@@ -375,6 +292,34 @@ class ScalableBloomFilter(object):
                 self.filters.append(filter)
         filter.add(key, skip_check=True)
         return False
+
+    def union(self, other):
+        """ Calculates the union of the underlying classic bloom filters and returns
+        a new scalable bloom filter object."""
+
+        if self.scale != other.scale or \
+                self.initial_capacity != other.initial_capacity or \
+                self.error_rate != other.error_rate:
+            raise ValueError("Unioning two scalable bloom filters requires \
+            both filters to have both the same mode, initial capacity and error rate")
+        if len(self.filters) > len(other.filters):
+            larger_sbf = copy.deepcopy(self)
+            smaller_sbf = other
+        else:
+            larger_sbf = copy.deepcopy(other)
+            smaller_sbf = self
+        # Union the underlying classic bloom filters
+        new_filters = []
+        for i in range(len(smaller_sbf.filters)):
+            new_filter = larger_sbf.filters[i] | smaller_sbf.filters[i]
+            new_filters.append(new_filter)
+        for i in range(len(smaller_sbf.filters), len(larger_sbf.filters)):
+            new_filters.append(larger_sbf.filters[i])
+        larger_sbf.filters = new_filters
+        return larger_sbf
+
+    def __or__(self, other):
+        return self.union(other)
 
     @property
     def capacity(self):
@@ -398,7 +343,7 @@ class ScalableBloomFilter(object):
             # Then each filter directly, with a header describing
             # their lengths.
             headerpos = f.tell()
-            headerfmt = b'<' + b'Q'*(len(self.filters))
+            headerfmt = b'<' + b'Q' * (len(self.filters))
             f.write(b'.' * calcsize(headerfmt))
             filter_sizes = []
             for filter in self.filters:
@@ -416,7 +361,7 @@ class ScalableBloomFilter(object):
         filter._setup(*unpack(cls.FILE_FMT, f.read(calcsize(cls.FILE_FMT))))
         nfilters, = unpack(b'<l', f.read(calcsize(b'<l')))
         if nfilters > 0:
-            header_fmt = b'<' + b'Q'*nfilters
+            header_fmt = b'<' + b'Q' * nfilters
             bytes = f.read(calcsize(header_fmt))
             filter_lengths = unpack(header_fmt, bytes)
             for fl in filter_lengths:
@@ -433,4 +378,5 @@ class ScalableBloomFilter(object):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
