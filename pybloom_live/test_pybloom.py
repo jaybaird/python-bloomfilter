@@ -105,7 +105,7 @@ class TestSerialization:
     SIZE = 12345
     EXPECTED = set([random.randint(0, 10000100) for _ in range_fn(0, SIZE)])
 
-    @pytest.mark.parametrize("klass,args", [
+    @pytest.mark.parametrize("cls,args", [
         (BloomFilter, (SIZE,)),
         (ScalableBloomFilter, ()),
     ])
@@ -119,8 +119,8 @@ class TestSerialization:
             lambda: StringIO.StringIO,
             marks=pytest.mark.skipif(running_python_3, reason="Python 2 only")),
     ])
-    def test_serialization(self, klass, args, stream_factory):
-        filter = klass(*args)
+    def test_serialization(self, cls, args, stream_factory):
+        filter = cls(*args)
         for item in self.EXPECTED:
             filter.add(item)
 
@@ -129,7 +129,7 @@ class TestSerialization:
         del filter
 
         f.seek(0)
-        filter = klass.fromfile(f)
+        filter = cls.fromfile(f)
         for item in self.EXPECTED:
             assert item in filter
 
