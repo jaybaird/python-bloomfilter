@@ -1,3 +1,8 @@
+Changes in 3.0.0
+================
+Backward incompatible change: dropped the support of Python 2.6.
+Fix an BytesIO issues that prevents Python 2.7 from serialising a filter.
+
 Changes in 2.3.2
 ==============
 Added hash function to the filter instance.
