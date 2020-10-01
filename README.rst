@@ -50,3 +50,6 @@ functions.
     # len(sbf) may not equal the entire input length. 0.01% error is well
     # below the default 0.1% error threshold. As the capacity goes up, the
     # error will approach 0.1%.
+    
+    
+    Thanks! for visiting us.
