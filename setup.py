@@ -36,6 +36,6 @@ setup(
     platforms=['any'],
     test_suite="pybloom.tests",
     zip_safe=True,
-    install_requires=['bitarray>=0.3.4'],
+    install_requires=['bitarray>1.5.1'],
     packages=['pybloom']
 )
